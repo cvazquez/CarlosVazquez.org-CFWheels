@@ -1,0 +1,120 @@
+ul.item-list {
+width: 310px;
+list-style: none;
+padding: 0;
+}
+
+input.item-input {
+display: block;
+width: 290px!important;
+height: 20px;
+margin: 2px;
+padding: 2px 10px 0px 4px!important;
+background-color: #FFFFFF;
+color: #000000;
+border: 1px solid black;
+border-radius: 5px;
+font-size: 100%;
+}
+
+#editForm input {
+width: 650px;
+padding: 4px;
+}
+
+/* Added */
+/* Sub Procedure Guides */
+.listClass
+	{
+	margin-bottom: 0;
+	}
+.listItem
+	{
+	border:1px solid #CEEDFF;
+	list-style: none;
+	margin-bottom: 2px;
+	padding:2px;
+	cursor: n-resize;
+	background-color: #EDFAFF;
+	}
+.listItem:hover
+	{
+	border:1px solid #D1FFD8;
+	background-color: #EDFFF5;
+	}
+.noLink
+	{
+	text-decoration: none;
+	color: black;
+	}
+.noLink:hover
+	{
+	cursor: n-resize;
+	color: black;
+	}
+
+html body ul.ui-autocomplete{
+	background:#EEEEEE;
+	border-radius:0;
+	list-style:none;
+	border: 1px solid #a0bfbe;
+	padding: 0px;
+	z-index: 100!important;
+	max-height:300px;
+	overflow-x:hidden;
+	overflow-y:auto;
+}
+html body ul.ui-autocomplete li a{
+	color: #000000;
+}
+html body ul.ui-autocomplete li a.ui-state-hover{
+	color:#000000;
+	background:#DEF2FF;
+	border-color:#C9E7FA;
+}
+
+ul.no-margin{
+	margin: 0;
+}
+ul.item-list{
+	width: 310px;
+	list-style:none;
+	padding: 0;
+}
+ul.item-list li{
+	display:none;
+	width:290px;
+	height: 20px;
+	margin: 2px;
+	padding: 3px 10px 0px 4px;
+	background-color:#EEEEEE;
+	color:#000000;
+	border:1px solid black;
+	border-radius:5px;
+}
+ul.item-list li:hover{
+	background-color:#F8F8F8;
+}
+ul.item-list li.active{
+	display:block;
+}
+ul.item-list li a.close{
+	color:#FF0000;
+	display:block;
+	float:right;
+	font-size:14px;
+}
+ul.item-list li a.close:hover{
+	cursor: pointer;
+}
+ul.item-list li.input{
+	display:block;
+	margin:0px;
+	padding:0px;
+	background:none;
+	border:none;
+}
+.ui-corner-all:hover
+{
+	cursor: pointer;
+}
