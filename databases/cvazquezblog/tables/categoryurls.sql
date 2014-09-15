@@ -36,6 +36,9 @@ CREATE
 delimiter ;
 
 GRANT SELECT, TRIGGER, UPDATE ON `cvazquezblog`.`categoryurls` TO 'blog_trig_user'@'127.0.0.1';
+GRANT SELECT, TRIGGER, UPDATE ON `cvazquezblog`.`categoryurls` TO 'blog_trig_user'@'localhost';
+
+TRIGGER command denied to user 'blog_trig_user'@'localhost' for table 'categoryurls'
 
 /*
 INSERT IGNORE INTO categoryurls (categoryId, name, isActive, createdAt)

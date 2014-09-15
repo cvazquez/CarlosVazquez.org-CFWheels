@@ -3,6 +3,7 @@ CREATE TABLE cvazquezblog.`categories` (
 	`categoryId`  SMALLINT(9) UNSIGNED NULL DEFAULT NULL COMMENT 'SubCategory of this category',
 
 	`name` VARCHAR(250) NOT NULL DEFAULT '',
+	`description` TEXT NOT NULL,
 	
 	`createdAt` datetime NULL DEFAULT NULL,
 	`createdBy` mediumint unsigned NULL DEFAULT NULL,
@@ -52,3 +53,6 @@ GRANT TRIGGER ON `cvazquezblog`.`categories` TO 'blog_trig_user'@'127.0.0.1';
 
 /* INSERT command denied to user 'blog_trig_user'@'localhost' for table 'categoryurls' */
 GRANT INSERT ON `cvazquezblog`.`categoryurls` TO 'blog_trig_user'@'localhost';
+
+alter table categories
+add `description` TEXT NOT NULL after name;

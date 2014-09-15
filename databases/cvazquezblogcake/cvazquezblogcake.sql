@@ -46,4 +46,19 @@ CREATE DEFINER = `blog_view_user`@`localhost`
 GRANT SELECT, DELETE, INSERT ON cvazquezblogcake.categories_posts TO 'cakeUser'@'localhost';
 GRANT SELECT, DELETE, INSERT ON cvazquezblog.entrycategories TO blog_view_user@localhost;
 
+
+DROP VIEW IF EXISTS cvazquezblogcake.users;
+CREATE DEFINER = `blog_view_user`@`localhost`
+    SQL SECURITY DEFINER
+    VIEW cvazquezblogcake.users (`id`, username, `password`, role, `created`, `createdBy`, `modified`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`)
+    AS 
+	 SELECT `id`, handle, passwd, if(handle = "cvazquez1976@gmail.com", "admin", "") AS username, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`
+	 FROM cvazquezblog.users
+    WITH  CHECK OPTION;
+
+GRANT SELECT ON cvazquezblogcake.users TO 'cakeUser'@'localhost';
+GRANT SELECT ON cvazquezblog.users TO blog_view_user@localhost;
+
+
+
 show grants for 'cakeUser'@'localhost';

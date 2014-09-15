@@ -1,6 +1,7 @@
 <div id="BlogEntryContainer">
 <cfoutput>
 <h1>#title#</h1>
+<p>#qCategory.description#</p>
 </cfoutput>
 
 <!---

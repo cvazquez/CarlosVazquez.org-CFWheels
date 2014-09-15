@@ -223,6 +223,7 @@
  * A random string used in security hashing methods.
  */
 	Configure::write('Security.salt', '&WsAPj&W_Q39sUyI*$H4-si6i5YehJWoRNSazepY');
+	//Configure::write('Security.salt', '');
 
 /**
  * A random numeric string (digits only) used to encrypt/decrypt strings.

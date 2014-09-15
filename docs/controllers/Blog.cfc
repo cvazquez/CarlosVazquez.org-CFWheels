@@ -41,7 +41,7 @@
 
 <cffunction name="Category" hint="/blog/category/[categoryName]">
 	<!--- Find the category URL ---->
-	<cfset qCategory = model("category").findOne(	select	= "categories.id, categories.name AS categoryName, categoryurls.name AS URLName",
+	<cfset qCategory = model("category").findOne(	select	= "categories.id, categories.name AS categoryName, categories.description, categoryurls.name AS URLName",
 													include	= "categoryurl,entrycategories",
 													where	= "categoryurls.name = '#params.categoryName#' AND categoryurls.isActive = 1",
 													returnAs	= "query")>

@@ -78,6 +78,7 @@
 					<a href="/blog/category/reviews">Reviews</a> --->
 					<a href="/blog/category/Random-Ramblings">Random&nbsp;Stuff</a>
 					<a href="/blog/category/Website-Development">Website Development</a>
+					<a href="/blog/category/Portfolio">Portfolio</a>
 				</div>
 			</div>
 
