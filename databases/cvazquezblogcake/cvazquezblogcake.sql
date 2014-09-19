@@ -3,15 +3,15 @@ CREATE DATABASE cvazquezblogcake;
 DROP VIEW cvazquezblogcake.posts;
 CREATE DEFINER = `blog_view_user`@`localhost`
     SQL SECURITY DEFINER
-    VIEW cvazquezblogcake.posts (`id`, `post_id`, `title`, `teaser`, `body`, `metaDescription`, `metaKeyWords`, `publishAt`, `created`, `createdBy`, `modified`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`)
+    VIEW cvazquezblogcake.posts (`id`, `post_id`, `title`, `teaser`, `body`, `metaDescription`, `metaKeyWords`, `publishAt`, `created`, `modified`, `updatedBy`, `deletedAt`, `deletedBy`, `user_id`)
     AS 
-	 SELECT `id`, `entryId`, `title`, `teaser`, `content`, `metaDescription`, `metaKeyWords`, `publishAt`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`
+	 SELECT `id`, `entryId`, `title`, `teaser`, `content`, `metaDescription`, `metaKeyWords`, `publishAt`, `createdAt`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`, `createdBy`
 	 FROM cvazquezblog.entries
     WITH  CHECK OPTION;
     
-GRANT SELECT ON cvazquezblogcake.posts TO 'cakeUser'@'localhost';
 
-GRANT SELECT ON cvazquezblog.entries TO blog_view_user@localhost;
+GRANT SELECT, INSERT, UPDATE ON `cvazquezblogcake`.`posts` TO 'cakeUser'@'localhost';
+GRANT SELECT, INSERT, UPDATE ON cvazquezblog.entries TO blog_view_user@localhost;
     
 SELECT * from cvazquezblogcake.posts
 limit 10;
@@ -52,7 +52,7 @@ CREATE DEFINER = `blog_view_user`@`localhost`
     SQL SECURITY DEFINER
     VIEW cvazquezblogcake.users (`id`, username, `password`, role, `created`, `createdBy`, `modified`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`)
     AS 
-	 SELECT `id`, handle, passwd, if(handle = "cvazquez1976@gmail.com", "admin", "") AS username, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`
+	 SELECT `id`, handle, passwd, if(handle = "xxxxx", "admin", "") AS username, `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`, `timestampAt`
 	 FROM cvazquezblog.users
     WITH  CHECK OPTION;
 

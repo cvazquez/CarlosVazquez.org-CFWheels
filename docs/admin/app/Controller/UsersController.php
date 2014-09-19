@@ -14,6 +14,10 @@ public function beforeFilter() {
 public function login() {
     if ($this->request->is('post')) {
         if ($this->Auth->login()) {
+        	
+        	// It kept redirecting to /pages/home, so I check if it tries and redirect to / instead
+        	if ($this->Auth->redirect() == "/pages/home") $this->Auth->redirect("/");        
+        	
             return $this->redirect($this->Auth->redirect());
         }
         $this->Session->setFlash(__('Invalid username or password, try again'));

@@ -27,6 +27,9 @@ $this->Html->scriptEnd();
 echo $this->Form->create('Post');
 echo $this->Form->input('title');
 
+// Allow an empty date if not ready to publish
+echo $this->Form->input('publishAt', array('allowEmpty' => true, 'default' => 0, 'empty' => true));
+
 /* Multi select */
 //echo $this->Form->input('Category');
 
@@ -49,9 +52,10 @@ print_r($categoriesSelected);
 echo "</pre>";
 */
 
+// Loop through each category
 foreach ($categories AS $categoryId=>$categoryName)
 	{
-		//if (array_key_exists($categoryId,$categoriesSelected))
+		// If this category is in the array of categories already associated with this post (in the categories_posts table), then set class=active to show the category. Otherwise the category stays hidden and isn't selected
 		if (in_array($categoryId,$categoriesSelected))
 		{
 			$selected = "class='active'";
@@ -60,14 +64,18 @@ foreach ($categories AS $categoryId=>$categoryName)
 		{
 			$selected = "";
 		}
-		
+
+		// Create each category in a list, but only display if class=active is set
 		echo '<li item="' . $categoryId. '" title="' . $categoryName . '"' . $selected . '>' . $categoryName;;
 			
+		// Allow removal of an active category
 		echo '<a class="close" title="Remove ' .  $categoryName . '">x</a>';
 		echo '</li>';
 	}
+
+	// This is an autocomplete input form, that displays available categories. You can also cursor down to display a list
 ?>
-	<li class="input"><input class="item-input" value="" tabindex="2"></li>
+	<li class="input"><input class="item-input" value="" tabindex="2" placeholder="Start typing or press down"></li>
 </ul>
 <?php //<input type="hidden" id="categories" name="data[CategoryPost][categoryids]" value="">?>
 </div>
