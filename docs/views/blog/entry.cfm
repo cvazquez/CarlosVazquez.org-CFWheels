@@ -35,6 +35,21 @@
 	</cfif>
 
 
+	<cfif qSeriesPosts.recordCount GT 0>
+		<h3>Read more posts in the <i>#qSeriesPosts.name#</i> series:</h2>
+		<ul>
+			<cfloop query="qSeriesPosts">
+				<li>
+					<cfif qSeriesPosts.entryId EQ id>
+						#qSeriesPosts.title#
+					<cfelse>
+						#linkTo(text="#qSeriesPosts.title#", href="/blog/#qSeriesPosts.titleURL#")#
+					</cfif>
+				</li>
+			</cfloop>	
+		</ul>		
+	</cfif>
+
 
 	<cfif NewEntryObject.id NEQ 168> <!--- Comments form --->
 		<div class="clear"></div>

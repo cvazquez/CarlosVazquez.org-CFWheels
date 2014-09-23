@@ -60,5 +60,17 @@ GRANT SELECT ON cvazquezblogcake.users TO 'cakeUser'@'localhost';
 GRANT SELECT ON cvazquezblog.users TO blog_view_user@localhost;
 
 
+DROP VIEW IF EXISTS cvazquezblogcake.admin_settings;
+CREATE DEFINER = `blog_view_user`@`localhost`
+    SQL SECURITY DEFINER
+    VIEW cvazquezblogcake.admin_settings (`id`, name, value, deletedAt)
+    AS 
+	 SELECT id, name, value, deletedAt
+	 FROM cvazquezblog.adminsettings
+    WITH  CHECK OPTION;
+
+GRANT SELECT ON cvazquezblogcake.admin_settings TO 'cakeUser'@'localhost';
+GRANT SELECT ON cvazquezblog.adminsettings TO blog_view_user@localhost;
+
 
 show grants for 'cakeUser'@'localhost';

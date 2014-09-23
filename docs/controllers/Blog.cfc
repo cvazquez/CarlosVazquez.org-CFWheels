@@ -55,7 +55,7 @@
 	<cfset qCategoryEntries = model("entry").findAll(	select	= "entries.title, entryurls.titleURL, Date_Format(entries.publishAt, '%b %e, %Y') AS publishDate,
 																	entries.teaser AS contentTeaser",
 																include	= "entrycategories,entryurls",
-																where	= "entrycategories.categoryId = #qCategory.id#",
+																where	= "entrycategories.categoryId = #qCategory.id# AND entries.publishAt <= now()",
 																order	= "entries.publishAt desc")>
 
 	<cfset qLatestBlogs = LatestBlogs()>
@@ -98,8 +98,10 @@
 		<cfset title = qBlogEntry.title>
 		<cfset content = qBlogEntry.content>
 		<cfset publishDate = qBlogEntry.publishAt>
-
-
+		<cfset id = qBlogEntry.id>
+		
+		<cfset qSeriesPosts = model("Entry").GetSeriesEntries(qBlogEntry.id)>
+		
 		<!--- Comments/Discussion to display at bottom of blog --->
 		<cfif qBlogEntry.discussionCount GT 0>
 			<cfset qBlogDiscussions = model("Entrydiscussion").GetEntryDiscussions(qBlogEntry.id)>
@@ -878,6 +880,7 @@
 	<cfset qTopCategories = model("category").findAll(
 							select	= "categories.name, categoryurls.name AS nameURL, count(distinct(entrycategories.entryId)) AS entryCount",
 							include = "categoryurl,entrycategories(entry)",
+							where	= "entries.publishAt <= now()",
 							group	= "entrycategories.categoryId",
 							order	= "count(distinct(entrycategories.entryId)) desc",
 							$limit	= 5)>

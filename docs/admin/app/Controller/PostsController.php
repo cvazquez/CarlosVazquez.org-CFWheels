@@ -69,18 +69,20 @@ class PostsController extends AppController {
 	        
         	if ($saveStatus ) {
         		
+        		
+        		// Use the Cake PHP database config values to create a connection to MySQL
+        		$database = new DATABASE_CONFIG();
+        		$mysqli = new mysqli($database->default["host"], $database->default["login"], $database->default["password"], $database->default["database"]);
+        		
+        		if ($mysqli->connect_errno) {
+        			echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
+        		}
+        		         		
         		// Saving categories by looping through array list of selected categories
         		foreach ($this->request->data["Category"] as $category => $v)
         		{
         			//echo "$category=>$v[id]<br>";
         			
-        			// Use the Cake PHP database config values to create a connection to MySQL
-        			$database = new DATABASE_CONFIG();
-        			$mysqli = new mysqli($database->default["host"], $database->default["login"], $database->default["password"], $database->default["database"]);
-        			 
-        			if ($mysqli->connect_errno) {
-        				echo "Failed to connect to MySQL: (" . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-        			}
         			
         			if (!($stmt = $mysqli->prepare("INSERT IGNORE INTO categories_posts (post_id, category_id, created) VALUES (?, ?, now())"))) {
 					     echo "Prepare failed: (" . $mysqli->errno . ") " . $mysqli->error;

@@ -31,6 +31,7 @@ App::uses('Controller', 'Controller');
  * @link		http://book.cakephp.org/2.0/en/controllers.html#the-app-controller
  */
 class AppController extends Controller {
+	
 	 public $components = array(
 	 			'DebugKit.Toolbar',
 	 			'Session',
@@ -54,8 +55,31 @@ class AppController extends Controller {
 	 				)
 	 			);
 	 
+ 
 	 public function beforeFilter() {
-	 	//$this->Auth->allow('index', 'view');
+	 	//$this->Auth->allow('index', 'view');	 
+
+	 	parent::beforeFilter();
+	 	
+	 	
+	 	/* Remove the DebugKit Toolbar if the IP Address is not allow to see it, based on IP's stored in the admin_settings table */
+	 	
+	 	/* Load the AdminSettings model which contains the debugIPAddress */
+	 	$this->loadModel('AdminSetting');
+	 	
+	 	/* Retrieve one record with the field name/value  `name` = debugIPAddress */
+	 	$post = $this->AdminSetting->find('first', array(	
+	 						'conditions' => array('name' => 'debugIPAddress'),
+	 						'fields' => array('value'),
+	 			) 
+	 			);
+	 	
+	 	/* If the users IP address is not equal to the debugIPAddress value, then display the DebugKit Toolbar */	 	
+	 	if ($_SERVER['REMOTE_ADDR'] != $post["AdminSetting"]["value"])
+	 	{
+	 		$this->Components->unload('DebugKit.Toolbar');
+	 	}
+	 	
 	 }
 	 
 	 public function isAuthorized($user) {

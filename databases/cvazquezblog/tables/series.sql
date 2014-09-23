@@ -30,3 +30,5 @@ CREATE
 	END;
 |
 delimiter ;
+
+GRANT SELECT, UPDATE, TRIGGER ON series TO 'blog_trig_user'@'localhost';

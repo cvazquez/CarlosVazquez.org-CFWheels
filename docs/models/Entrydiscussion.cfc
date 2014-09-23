@@ -92,7 +92,7 @@
 									AND (entrydiscussions.approvedAt IS NOT NULL OR (dateDiff(now(), entrydiscussions.createdAt) <= 1))
 									AND entrydiscussions.deletedAt IS NULL
 									AND entrydiscussions.entryId <> 168 <!--- Comments form --->
-			INNER JOIN entries ON entrydiscussions.entryId = entries.id AND entries.deletedAt IS NULL
+			INNER JOIN entries ON entrydiscussions.entryId = entries.id AND entries.deletedAt IS NULL AND entries.publishAt <= now()
 			INNER JOIN entryurls ON entries.id = entryurls.entryId AND entryurls.deletedAt IS NULL
 			WHERE users.deletedAt IS NULL
 			GROUP BY entrydiscussions.id
@@ -123,7 +123,7 @@
 		<cfquery datasource="#get("DATASOURCENAME")#" name="qUsers">
 			SELECT users.email, users.firstName, users.lastName, e.title, entryurls.titleURL
 			FROM entrydiscussions ed1
-			INNER JOIN entries e ON e.id = ed1.entryId AND e.deletedAt IS NULL
+			INNER JOIN entries e ON e.id = ed1.entryId AND e.deletedAt IS NULL AND entries.publishAt <= now()
 			INNER JOIN entryurls ON entryurls.entryId = e.id AND entryurls.isActive = 1 AND entryurls.deletedAt IS NULL
 			INNER JOIN entrydiscussions ed2 ON ed2.entryId = ed1.entryId AND ed2.id <> ed1.id AND ed2.wantsReplies = 1 AND ed2.approvedAt IS NOT NULL AND ed2.deletedAt IS NULL
 			INNER JOIN users ON users.id = ed2.userId AND users.deletedAt IS NULL

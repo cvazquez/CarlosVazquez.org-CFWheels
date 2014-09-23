@@ -17,7 +17,8 @@ $this->Html->scriptStart(array('inline' => false));
 
 tinymce.init({
 	selector: "textarea",
-	plugins: "code"
+	plugins: "code,link,paste",
+	paste_retain_style_properties: "color font-size"
 });
 
 <?php
