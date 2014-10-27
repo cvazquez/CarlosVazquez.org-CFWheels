@@ -5,6 +5,11 @@
 	#content#
 
 
+	<!-- Finally, to actually run the highlighter, you need to include this JS on your page -->
+	<script type="text/javascript">
+	     SyntaxHighlighter.all()
+	</script>
+
 	<!--- Image slideshow --->
 	<cfif qFlikr.recordCount Gt 0>
 		<div class="clear"></div>

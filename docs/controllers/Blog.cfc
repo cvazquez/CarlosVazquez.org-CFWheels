@@ -138,6 +138,16 @@
 		<!--- Javascript functions for this action --->
 		<cfset javaScriptIncludeTag(sources	= "blog/entry",
 									head	= true)>
+									
+		<!--- Code syntax highlighter http://alexgorbatchev.com/SyntaxHighlighter/manual/installation.html --->		
+		<cfset javaScriptIncludeTag(sources	= "syntaxhighlighter_3.0.83/shCore",
+									head	= true)>
+		<cfset javaScriptIncludeTag(sources	= "syntaxhighlighter_3.0.83/shBrushJScript",
+									head	= true)>
+		
+		<cfset styleSheetLinkTag(source = "syntaxhighlighter_3.0.83/shCore", head=true)>
+		<cfset styleSheetLinkTag(source = "syntaxhighlighter_3.0.83/shThemeDefault", head=true)>
+		
 
 		<cfset breadCrumbArray[1] = "/blog|Home">
 		<cfif listLen(qBlogEntry.categoryURL) AND listLen(qBlogEntry.categoryName)>
