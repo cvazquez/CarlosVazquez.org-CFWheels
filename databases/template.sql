@@ -1,9 +1,8 @@
 /*
-Filename: Q:\Databases\[Database Name]\table.sql
+Filename: ...\[Database Name]\table.sql
 Date: mm/dd/yyyy
 Last Updated: mm/dd/yyyy
-DB Developer: Firstname Lastname (name@mojointeractive.com)
-COPYRIGHT:  Copyright (C) 2012 by Mojo Interactive, Inc.,
+DB Developer: Firstname Lastname (name@yourdomain.com)
 Purpose: [Add to table comment]
 Notes: any other important information here.
 Project Folder(s):
@@ -81,7 +80,7 @@ Table name: basic_entities (should be plural)
 CREATE TABLE basic_entities
 (
 	id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-	foriegnRable2Id /* Name with the full table name in singular with _id appended */
+	foriegnRable2Id /* Name with the full table name in singular with Id appended */
 	foriegnTable3Id
 	attribute1
 	attribute2
@@ -94,12 +93,12 @@ CREATE TABLE basic_entities
   `deletedBy` mediumint unsigned NULL,
   `timestampAt` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
 ) comment = "Short description of table and how it relates to other tables. Maybe note application used for."
-  ENGINE=MyISAM DEFAULT CHARSET=latin1;
+  ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 
 OPTIONAL FIELDS:
 sourceId    --->    sources
-dbsource_id    ---->    db_sources
+dbSourceId    ---->    dbSources
 
 
 
