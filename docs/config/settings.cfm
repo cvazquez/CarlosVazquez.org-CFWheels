@@ -76,7 +76,7 @@
 
 
 
-<cfif cgi.server_name EQ "railo.carlosvazquez.org">
+<cfif cgi.server_name EQ "dev.cf.carlosvazquez.org">
 	<cfset Server.thisServer = "dev">
 	<cfset set(reloadPassword="")>
 

@@ -750,7 +750,7 @@ Should now call bar() instead and marking foo() as deprecated
 		<!--- the line number --->
 		<cfset loc.ret.line = loc.context.line>
 		<!--- the deprecated method that was called --->
-		<cfif StructKeyExists(server, "railo")>
+		<cfif StructKeyExists(server, "lucee")>
 			<cfset loc.ret.method = rereplacenocase(loc.context.codePrintPlain, '.*\<cffunction name="([^"]*)">.*', "\1")>
 		<cfelse>
 			<cfset loc.ret.method = rereplacenocase(loc.context.raw_trace, ".*\$func([^\.]*)\..*", "\1")>

@@ -17,10 +17,10 @@
 
 		// check and store server engine name, throw error if using a version that we don't support
 		// really need to refactor this into a method
-		if (StructKeyExists(server, "railo"))
+		if (StructKeyExists(server, "lucee"))
 		{
-			application.wheels.serverName = "Railo";
-			application.wheels.serverVersion = server.railo.version;
+			application.wheels.serverName = "Lucee";
+			application.wheels.serverVersion = server.lucee.version;
 			loc.minimumServerVersion = "3.1.2.020";
 		}
 		else
