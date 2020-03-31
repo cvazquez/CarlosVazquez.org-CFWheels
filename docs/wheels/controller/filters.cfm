@@ -1,132 +1,137 @@
-<!--- PUBLIC CONTROLLER INITIALIZATION FUNCTIONS --->
+<cfscript>
 
-<cffunction name="filters" returntype="void" access="public" output="false" hint="Tells Wheels to run a function before an action is run or after an action has been run. You can also specify multiple functions and actions."
-	examples=
-	'
-		<!--- Always execute `restrictAccess` before all actions in this controller --->
-		<cfset filters("restrictAccess")>
-
-		<!--- Always execute `isLoggedIn` and `checkIPAddress` (in that order) before all actions in this controller except the `home` and `login` actions --->
-		<cfset filters(through="isLoggedIn,checkIPAddress", except="home,login")>
-	'
-	categories="controller-initialization,filtering" chapters="filters-and-verification" functions="setFilterChain,filterChain">
-	<cfargument name="through" type="string" required="true" hint="Function(s) to execute before or after the action(s).">
-	<cfargument name="type" type="string" required="false" default="before" hint="Whether to run the function(s) before or after the action(s).">
-	<cfargument name="only" type="string" required="false" default="" hint="Pass in a list of action names (or one action name) to tell Wheels that the filter function(s) should only be run on these actions.">
-	<cfargument name="except" type="string" required="false" default="" hint="Pass in a list of action names (or one action name) to tell Wheels that the filter function(s) should be run on all actions except the specified ones.">
-	<cfscript>
-		var loc = {};
-
-		arguments.through = $listClean(arguments.through);
-		arguments.only = $listClean(arguments.only);
-		arguments.except = $listClean(arguments.except);
-
-		loc.namedArguments = "through,type,only,except";
-		loc.iEnd = ListLen(arguments.through);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-		{
-			loc.filter = {};
-			loc.filter.through = ListGetAt(arguments.through, loc.i);
-			loc.filter.type = arguments.type;
-			loc.filter.only = arguments.only;
-			loc.filter.except = arguments.except;
-			loc.filter.arguments = {};
-			if (StructCount(arguments) > ListLen(loc.namedArguments))
-			{
-				loc.dynamicArgument = loc.filter.through & "Arguments";
-				if (StructKeyExists(arguments, loc.dynamicArgument))
-					loc.filter.arguments = arguments[loc.dynamicArgument];
-				for (loc.key in arguments)
-				{
-					if (!ListFindNoCase(ListAppend(loc.namedArguments, loc.dynamicArgument), loc.key))
-						loc.filter.arguments[loc.key] = arguments[loc.key];
+/**
+ * Tells CFWheels to run a function before an action is run or after an action has been run.
+ *
+ * [section: Controller]
+ * [category: Configuration Functions]
+ *
+ * @through Function(s) to execute before or after the action(s).
+ * @type Whether to run the function(s) before or after the action(s).
+ * @only Pass in a list of action names (or one action name) to tell CFWheels that the filter function(s) should only be run on these actions.
+ * @except Pass in a list of action names (or one action name) to tell CFWheels that the filter function(s) should be run on all actions except the specified ones.
+ * @placement Pass in `prepend` to prepend the function(s) to the filter chain instead of appending.
+ */
+public void function filters(
+	required string through,
+	string type="before",
+	string only="",
+	string except="",
+	string placement="append"
+) {
+	arguments.through = $listClean(arguments.through);
+	arguments.only = $listClean(arguments.only);
+	arguments.except = $listClean(arguments.except);
+	local.namedArguments = "through,type,only,except,placement";
+	local.iEnd = ListLen(arguments.through);
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+		local.filter = {};
+		local.filter.through = ListGetAt(arguments.through, local.i);
+		local.filter.type = arguments.type;
+		local.filter.only = arguments.only;
+		local.filter.except = arguments.except;
+		local.filter.arguments = {};
+		if (StructCount(arguments) > ListLen(local.namedArguments)) {
+			local.dynamicArgument = local.filter.through & "Arguments";
+			if (StructKeyExists(arguments, local.dynamicArgument)) {
+				local.filter.arguments = arguments[local.dynamicArgument];
+			}
+			for (local.key in arguments) {
+				if (!ListFindNoCase(ListAppend(local.namedArguments, local.dynamicArgument), local.key)) {
+					local.filter.arguments[local.key] = arguments[local.key];
 				}
 			}
-			ArrayAppend(variables.$class.filters, loc.filter);
 		}
-	</cfscript>
-</cffunction>
-
-<cffunction name="setFilterChain" returntype="void" access="public" output="false" hint="Use this function if you need a more low level way of setting the entire filter chain for a controller."
-	examples=
-	'
-		<!--- Set filter chain directly in an array --->
-		<cfset setFilterChain([
-			{through="restrictAccess"},
-			{through="isLoggedIn,checkIPAddress", except="home,login"},
-			{type="after", through="logConversion", only="thankYou"}
-		])>
-	'
-	categories="controller-initialization,filtering" chapters="filters-and-verification" functions="filters,filterChain">
-	<cfargument name="chain" type="array" required="true" hint="An array of structs, each of which represent an `argumentCollection` that get passed to the `filters` function. This should represent the entire filter chain that you want to use for this controller.">
-	<cfscript>
-		var loc = {};
-		
-		// Clear current filter chain
-		variables.$class.filters = [];
-		// Loop through chain passed in arguments and add each item to filter chain
-		for(loc.i = 1; loc.i <= ArrayLen(arguments.chain); loc.i++) {
-			filters(argumentCollection=arguments.chain[loc.i]);
+		if (arguments.placement == "append") {
+			ArrayAppend(variables.$class.filters, local.filter);
+		} else {
+			ArrayPrepend(variables.$class.filters, local.filter);
 		}
-	</cfscript>
-</cffunction>
+	}
+}
 
-<!--- PUBLIC CONTROLLER CLASS FUNCTIONS --->
+/**
+ * Use this function if you need a more low level way of setting the entire filter chain for a controller.
+ *
+ * [section: Controller]
+ * [category: Configuration Functions]
+ *
+ * @chain An array of structs, each of which represent an `argumentCollection` that get passed to the `filters` function. This should represent the entire filter chain that you want to use for this controller.
+ */
+public void function setFilterChain(required array chain) {
 
-<cffunction name="filterChain" returntype="array" access="public" output="false" hint="Returns an array of all the filters set on this controller in the order in which they will be executed."
-	examples=
-	'
-		<!--- Get filter chain, remove the first item, and set it back --->
-		<cfset myFilterChain = filterChain()>
-		<cfset ArrayDeleteAt(myFilterChain, 1)>
-		<cfset setFilterChain(myFilterChain)>
-	'
-	categories="controller-initialization,filtering" chapters="filters-and-verification" functions="filters,setFilterChain">
-	<cfargument name="type" type="string" required="false" default="all" hint="Use this argument to return only `before` or `after` filters.">
-	<cfscript>
-		var loc = {};
+	// Clear current filter chain and then re-add from the passed in chain.
+	variables.$class.filters = [];
+	local.iEnd = ArrayLen(arguments.chain);
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+		filters(argumentCollection=arguments.chain[local.i]);
+	}
 
-		// invalid type
-		if (!ListFindNoCase("before,after,all", arguments.type))
-			$throw(type="Wheels.InvalidFilterType", message="The filter type of `#arguments.type#` is invalid.", extendedInfo="Please use either `before` or `after`.");
+}
 
-		// return all filters
-		if (arguments.type == "all")
-			return variables.$class.filters;
+/**
+ * Returns an array of all the filters set on current controller in the order in which they will be executed.
+ *
+ * [section: Controller]
+ * [category: Configuration Functions]
+ *
+ * @type Use this argument to return only before or after filters.
+ */
+public array function filterChain(string type="all") {
 
-		// loop over the filters and return all those that match the supplied type
-		loc.returnValue = ArrayNew(1);
-		loc.iEnd = ArrayLen(variables.$class.filters);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-		{
-			if (variables.$class.filters[loc.i].type == arguments.type)
-				ArrayAppend(loc.returnValue, variables.$class.filters[loc.i]);
-		}
-		return loc.returnValue;
-	</cfscript>
-</cffunction>
+	// Throw error if an invalid type was passed in.
+	if (!ListFindNoCase("before,after,all", arguments.type)) {
+		Throw(
+			type="Wheels.InvalidFilterType",
+			message="The filter type of `#arguments.type#` is invalid.",
+			extendedInfo="Please use either `before` or `after`."
+		);
+	}
 
-<!--- PRIVATE FUNCTIONS --->
-
-<cffunction name="$runFilters" returntype="void" access="public" output="false">
-	<cfargument name="type" type="string" required="true">
-	<cfargument name="action" type="string" required="true">
-	<cfscript>
-		var loc = {};
-		loc.filters = filterChain(arguments.type);
-		loc.iEnd = ArrayLen(loc.filters);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-		{
-			loc.filter = loc.filters[loc.i];
-			if ((!Len(loc.filter.only) && !Len(loc.filter.except)) || (Len(loc.filter.only) && ListFindNoCase(loc.filter.only, arguments.action)) || (Len(loc.filter.except) && !ListFindNoCase(loc.filter.except, arguments.action)))
-			{
-				if (!StructKeyExists(variables, loc.filter.through))
-					$throw(type="Wheels.filterNotFound", message="Wheels tried to run the `#loc.filter.through#` function as a #arguments.type# filter but could not find it.", extendedInfo="Make sure there is a function named `#loc.filter.through#` in the `#variables.$class.name#.cfc` file.");
-				loc.result = $invoke(method=loc.filter.through, invokeArgs=loc.filter.arguments);
-				// if the filter function returned false or rendered content we skip the remaining filters in the chain
-				if ((StructKeyExists(loc, "result") && !loc.result) || $performedRenderOrRedirect())
-					break;
+	// Set all filters to be returned, or loop over them and set only those that match the supplied type to be returned.
+	if (arguments.type == "all") {
+		local.rv = variables.$class.filters;
+	} else {
+		local.rv = [];
+		local.iEnd = ArrayLen(variables.$class.filters);
+		for (local.i = 1; local.i <= local.iEnd; local.i++) {
+			if (variables.$class.filters[local.i].type == arguments.type) {
+				ArrayAppend(local.rv, variables.$class.filters[local.i]);
 			}
 		}
-	</cfscript>
-</cffunction>
+	}
+
+	return local.rv;
+}
+
+/**
+ * Called twice when processing a request, first for "before" filters and then for "after" filters.
+ */
+public void function $runFilters(required string type, required string action) {
+	local.filters = filterChain(arguments.type);
+	local.iEnd = ArrayLen(local.filters);
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+		local.filter = local.filters[local.i];
+		local.listsNotSpecified = !Len(local.filter.only) && !Len(local.filter.except);
+		local.inOnlyList = Len(local.filter.only) && ListFindNoCase(local.filter.only, arguments.action);
+		local.notInExceptionList = Len(local.filter.except) && !ListFindNoCase(local.filter.except, arguments.action);
+		if (local.listsNotSpecified || local.inOnlyList || local.notInExceptionList) {
+			if (!StructKeyExists(variables, local.filter.through)) {
+				Throw(
+					type="Wheels.FilterNotFound",
+					message="CFWheels tried to run the `#local.filter.through#` function as a #arguments.type# filter but could not find it.",
+					extendedInfo="Make sure there is a function named `#local.filter.through#` in the `#variables.$class.name#.cfc` file."
+				);
+			}
+			local.result = $invoke(method=local.filter.through, invokeArgs=local.filter.arguments);
+
+			// If the filter returned false, rendered content or made a delayed redirect we skip the remaining filters.
+			if ((StructKeyExists(local, "result") && !isNull(local.result) && !local.result) || $performedRenderOrRedirect()) {
+				break;
+			}
+
+		}
+	}
+}
+
+</cfscript>

@@ -1,15 +1,12 @@
-<cffunction name="onSessionEnd" returntype="void" access="public" output="false">
-	<cfargument name="sessionscope" type="any" required="true">
-	<cfargument name="applicationscope" type="any" required="true">
-	<cfscript>
-		$simpleLock(execute="$runOnSessionEnd", executeArgs=arguments, name="wheelsReloadLock", type="readOnly", timeout=180);
-	</cfscript>
-</cffunction>
+<cfscript>
 
-<cffunction name="$runOnSessionEnd" returntype="void" access="public" output="false">
-	<cfargument name="sessionscope" type="any" required="true">
- 	<cfargument name="applicationscope" type="any" required="true">
-	<cfscript>
-		$include(template="#application.wheels.eventPath#/onsessionend.cfm");
-	</cfscript>
-</cffunction>
+public void function onSessionEnd(required sessionScope, required applicationScope){
+	local.lockName = "reloadLock" & arguments.applicationScope.applicationName;
+	$simpleLock(name=local.lockName, execute="$runOnSessionEnd", executeArgs=arguments, type="readOnly", timeout=180);
+}
+
+public void function $runOnSessionEnd(required sessionScope, required applicationScope){
+	$include(template="#arguments.applicationScope.wheels.eventPath#/onsessionend.cfm", argumentCollection=arguments);
+}
+
+</cfscript>

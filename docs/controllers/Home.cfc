@@ -1,4 +1,4 @@
-<cfcomponent output="false" extends="Controller">
+<cfcomponent output="true" extends="Controller">
 
 <cffunction name="index">
 
@@ -28,9 +28,10 @@
 		</cfif>
 	</cfif>
 
+	<cfset title = "The Adventures of Carlos">
 
-	<cfheader statuscode="301" statustext="Moved permanently">
-	<cfheader name="Location" value="/blog">
+	<!--- <cfheader statuscode="301" statustext="Moved permanently">
+	<cfheader name="Location" value="/blog"> --->
 </cffunction>
 
 <cffunction name="notfound">

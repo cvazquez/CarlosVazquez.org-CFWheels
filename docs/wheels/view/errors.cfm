@@ -1,78 +1,104 @@
-<cffunction name="errorMessagesFor" returntype="string" access="public" output="false" hint="Builds and returns a list (`ul` tag with a default class of `errorMessages`) containing all the error messages for all the properties of the object (if any). Returns an empty string otherwise."
-	examples=
-	'
-		<!--- view code --->
-		<cfoutput>
-		    ##errorMessagesFor(objectName="user")##
-		</cfoutput>
-	'
-	categories="view-helper,errors" chapters="form-helpers-and-showing-errors" functions="errorMessagesOn">
-	<cfargument name="objectName" type="string" required="true" hint="The variable name of the object to display error messages for.">
-	<cfargument name="class" type="string" required="false" hint="CSS class to set on the `ul` element.">
-	<cfargument name="showDuplicates" type="boolean" required="false" hint="Whether or not to show duplicate error messages.">
-	<cfscript>
-		var loc = {};
-		$args(name="errorMessagesFor", args=arguments);
-		loc.object = $getObject(arguments.objectName);
-		if (application.wheels.showErrorInformation && !IsObject(loc.object))
-			$throw(type="Wheels.IncorrectArguments", message="The `#arguments.objectName#` variable is not an object.");
-		loc.errors = loc.object.allErrors();
-		loc.returnValue = "";
-		if (!ArrayIsEmpty(loc.errors))
-		{
-			loc.used = "";
-			loc.listItems = "";
-			loc.iEnd = ArrayLen(loc.errors);
-			for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-			{
-				loc.msg = loc.errors[loc.i].message;
-				if(arguments.showDuplicates)
-				{
-					loc.listItems = loc.listItems & $element(name="li", content=loc.msg);
-				}
-				else
-				{
-					if(!ListFind(loc.used, loc.msg, Chr(7)))
-					{
-						loc.listItems = loc.listItems & $element(name="li", content=loc.msg);
-						loc.used = ListAppend(loc.used, loc.msg, Chr(7));
-					}
+<cfscript>
+
+/**
+ * Builds and returns a list (`ul` tag with a default `class` of `error-messages`) containing all the error messages for all the properties of the object.
+ * Returns an empty string if no errors exist.
+ *
+ * [section: View Helpers]
+ * [category: Error Functions]
+ *
+ * @objectName The variable name of the object to display error messages for.
+ * @class CSS `class` to set on the `ul` element.
+ * @showDuplicates Whether or not to show duplicate error messages.
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function errorMessagesFor(
+	required string objectName,
+	string class,
+	boolean showDuplicates,
+	boolean encode
+) {
+	$args(name="errorMessagesFor", args=arguments);
+	local.object = $getObject(arguments.objectName);
+	if ($get("showErrorInformation") && !IsObject(local.object)) {
+		Throw(type="Wheels.IncorrectArguments", message="The `#arguments.objectName#` variable is not an object.");
+	}
+	local.errors = local.object.allErrors();
+	local.rv = "";
+	if (!ArrayIsEmpty(local.errors)) {
+		local.used = "";
+		local.listItems = "";
+		local.iEnd = ArrayLen(local.errors);
+		for (local.i = 1; local.i <= local.iEnd; local.i++) {
+			local.msg = local.errors[local.i].message;
+			if (arguments.showDuplicates) {
+				local.listItems &= $element(name="li", content=local.msg, encode=arguments.encode);
+			} else {
+				if (!ListFind(local.used, local.msg, Chr(7))) {
+					local.listItems &= $element(name="li", content=local.msg, encode=arguments.encode);
+					local.used = ListAppend(local.used, local.msg, Chr(7));
 				}
 			}
-			loc.returnValue = $element(name="ul", skip="objectName,showDuplicates", content=loc.listItems, attributes=arguments);
 		}
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
+		local.encode = arguments.encode ? "attributes" : false;
+		local.rv = $element(name="ul", skip="objectName,showDuplicates,encode", content=local.listItems, attributes=arguments, encode=local.encode);
+	}
+	return local.rv;
+}
 
-<cffunction name="errorMessageOn" returntype="string" access="public" output="false" hint="Returns the error message, if one exists, on the object's property. If multiple error messages exist, the first one is returned."
-	examples=
-	'
-	<!--- view code --->
-	<cfoutput>
-	    ##errorMessageOn(objectName="user", property="email")##
-	</cfoutput>
-	'
-	categories="view-helper,errors" chapters="form-helpers-and-showing-errors" functions="errorMessagesOn">
-	<cfargument name="objectName" type="string" required="true" hint="The variable name of the object to display the error message for.">
-	<cfargument name="property" type="string" required="true" hint="The name of the property to display the error message for.">
-	<cfargument name="prependText" type="string" required="false" hint="String to prepend to the error message.">
-	<cfargument name="appendText" type="string" required="false" hint="String to append to the error message.">
-	<cfargument name="wrapperElement" type="string" required="false" hint="HTML element to wrap the error message in.">
-	<cfargument name="class" type="string" required="false" hint="CSS class to set on the wrapper element.">
-	<cfscript>
-		var loc = {};
-		$args(name="errorMessageOn", args=arguments);
-		loc.object = $getObject(arguments.objectName);
-		if (application.wheels.showErrorInformation && !IsObject(loc.object))
-			$throw(type="Wheels.IncorrectArguments", message="The `#arguments.objectName#` variable is not an object.");
-		loc.error = loc.object.errorsOn(arguments.property);
-		loc.returnValue = "";
-		if (!ArrayIsEmpty(loc.error))
-		{
-			loc.content = arguments.prependText & loc.error[1].message & arguments.appendText;
-			loc.returnValue = $element(name=arguments.wrapperElement, skip="objectName,property,prependText,appendText,wrapperElement", content=loc.content, attributes=arguments);
+/**
+ * Returns the error message, if one exists, on the object's property.
+ * If multiple error messages exist, the first one is returned.
+ *
+ * [section: View Helpers]
+ * [category: Error Functions]
+ *
+ * @objectName The variable name of the object to display the error message for.
+ * @property The name of the property to display the error message for.
+ * @prependText String to prepend to the error message.
+ * @appendText String to append to the error message.
+ * @wrapperElement HTML element to wrap the error message in.
+ * @class CSS `class` to set on the wrapper element.
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function errorMessageOn(
+	required string objectName,
+	required string property,
+	string prependText,
+	string appendText,
+	string wrapperElement,
+	string class,
+	boolean encode
+) {
+	$args(name="errorMessageOn", args=arguments);
+	local.object = $getObject(arguments.objectName);
+	if ($get("showErrorInformation") && !IsObject(local.object)) {
+		Throw(type="Wheels.IncorrectArguments", message="The `#arguments.objectName#` variable is not an object.");
+	}
+	local.error = local.object.errorsOn(arguments.property);
+	local.rv = "";
+	if (!ArrayIsEmpty(local.error)) {
+
+		// Encode all prepend / append type arguments if specified.
+		if (arguments.encode && $get("encodeHtmlTags")) {
+			if (Len(arguments.prependText)) {
+				arguments.prependText = EncodeForHtml($canonicalize(arguments.prependText));
+			}
+			if (Len(arguments.appendText)) {
+				arguments.appendText = EncodeForHtml($canonicalize(arguments.appendText));
+			}
 		}
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
+
+		local.content = arguments.prependText & local.error[1].message & arguments.appendText;
+		local.rv = $element(
+			attributes=arguments,
+			content=local.content,
+			name=arguments.wrapperElement,
+			skip="objectName,property,prependText,appendText,wrapperElement,encode",
+			encode=arguments.encode
+		);
+	}
+	return local.rv;
+}
+
+</cfscript>

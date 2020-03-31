@@ -1,4 +1,5 @@
-<!--- This file is only needed to get tests to work --->
-<cfcomponent output="false">
-	<cfinclude template="model.cfm">
-</cfcomponent>
+component output="false" displayName="Model" {
+	include "model/functions.cfm";
+	include "global/functions.cfm";
+	include "plugins/standalone/injection.cfm";
+}

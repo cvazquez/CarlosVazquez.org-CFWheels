@@ -5,7 +5,7 @@
 --->
 <cfcomponent extends="Model">
 
-	<cffunction name="init">
+	<cffunction name="config">
 		<cfset belongsTo("flickrset")>
 	</cffunction>
 

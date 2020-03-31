@@ -1,91 +1,108 @@
-<!--- PRIVATE FUNCTIONS --->
+<cfscript>
 
-<cffunction name="$createControllerObject" returntype="any" access="public" output="false">
-	<cfargument name="params" type="struct" required="true">
-	<cfscript>
-		var loc = {};
-		// if the controller file exists we instantiate it, otherwise we instantiate the parent controller
-		// this is done so that an action's view page can be rendered without having an actual controller file for it
-		loc.controllerName = $objectFileName(name=variables.$class.name, objectPath=variables.$class.path, type="controller");
-		loc.returnValue = $createObjectFromRoot(path=variables.$class.path, fileName=loc.controllerName, method="$initControllerObject", name=variables.$class.name, params=arguments.params);
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
+/**
+ * If the controller file exists we instantiate it, otherwise we instantiate the parent controller.
+ * This is done so that an action's view page can be rendered without having an actual controller file for it.
+ */
+public any function $createControllerObject(required struct params) {
+	local.controllerName = $objectFileName(
+		name=variables.$class.name,
+		objectPath=variables.$class.path,
+		type="controller"
+	);
+	return $createObjectFromRoot(
+		path=variables.$class.path,
+		fileName=local.controllerName,
+		method="$initControllerObject",
+		name=variables.$class.name,
+		params=arguments.params
+	);
+}
 
-<cffunction name="$initControllerClass" returntype="any" access="public" output="false">
-	<cfargument name="name" type="string" required="false" default="">
-	<cfscript>
-		variables.$class.name = arguments.name;
-		variables.$class.path = arguments.path;
+/**
+ * Return the controller data that is on the class level.
+ */
+public struct function $getControllerClassData() {
+	return variables.$class;
+}
 
-		// if our name has pathing in it, remove it and add it to the end of of the $class.path variable
-		if (Find("/", arguments.name))
-		{
-			variables.$class.name = ListLast(arguments.name, "/");
-			variables.$class.path = ListAppend(arguments.path, ListDeleteAt(arguments.name, ListLen(arguments.name, "/"), "/"), "/");
+/**
+ * Initialize the controller class level object and return it.
+ */
+public any function $initControllerClass(string name="") {
+	variables.$class.name = arguments.name;
+	variables.$class.path = arguments.path;
+	variables.$class.verifications = [];
+	variables.$class.filters = [];
+	variables.$class.cachableActions = [];
+	variables.$class.layout = {};
+
+	// Setup format info for providing content.
+	// Default the controller to only respond to HTML.
+	variables.$class.formats = {};
+	variables.$class.formats.default = "html";
+	variables.$class.formats.actions = {};
+	variables.$class.formats.existingTemplates = "";
+	variables.$class.formats.nonExistingTemplates = "";
+
+	$setFlashStorage($get("flashStorage"));
+
+	// Call the developer's "config" function if it exists.
+	if (StructKeyExists(variables, "config")) {
+		config();
+	}
+
+	return this;
+}
+
+/**
+ * Initialize the controller instance level object and return it.
+ */
+public any function $initControllerObject(required string name, required struct params) {
+
+	// Create a struct for storing request specific data.
+	variables.$instance = {};
+	variables.$instance.contentFor = {};
+
+	// Set file name to look for (e.g. "views/folder/helpers.cfm").
+	// Name could be dot notation so we need to change delimiters.
+	local.template = $get("viewPath") & "/" & LCase(ListChangeDelims(arguments.name, '/', '.')) & "/helpers.cfm";
+
+	// Check if the file exists on the file system if we have not already checked in a previous request.
+	// When the file is not found in either the existing or nonexisting list we know that we have not yet checked for it.
+	local.helperFileExists = false;
+	if (!ListFindNoCase(application.wheels.existingHelperFiles, arguments.name) && !ListFindNoCase(application.wheels.nonExistingHelperFiles, arguments.name)) {
+		if (FileExists(ExpandPath(local.template))) {
+			local.helperFileExists = true;
 		}
-
-		variables.$class.verifications = [];
-		variables.$class.filters = [];
-		variables.$class.cachableActions = [];
-		variables.$class.layout = {};
-		
-		// default the controller to only respond to html
-		variables.$class.formats = {};
-		variables.$class.formats.default = "html";
-		variables.$class.formats.actions = {};
-		variables.$class.formats.existingTemplates = "";
-		variables.$class.formats.nonExistingTemplates = "";
-		
-		$setFlashStorage(get("flashStorage"));
-		if (StructKeyExists(variables, "init"))
-			init();
-	</cfscript>
-	<cfreturn this>
-</cffunction>
-
-<cffunction name="$setControllerClassData" returntype="void" access="public" output="false">
-	<cfscript>
-		variables.$class = application.wheels.controllers[arguments.name].$getControllerClassData();
-	</cfscript>
-</cffunction>
-
-<cffunction name="$initControllerObject" returntype="any" access="public" output="false">
-	<cfargument name="name" type="string" required="true">
-	<cfargument name="params" type="struct" required="true">
-	<cfscript>
-		var loc = {};
-
-		// create a struct for storing request specific data
-		variables.$instance = {};
-		variables.$instance.contentFor = {};
-
-		// include controller specific helper files if they exist, cache the file check for performance reasons
-		loc.helperFileExists = false;
-		if (!ListFindNoCase(application.wheels.existingHelperFiles, arguments.name) && !ListFindNoCase(application.wheels.nonExistingHelperFiles, arguments.name))
-		{
-			if (FileExists(ExpandPath("#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm")))
-				loc.helperFileExists = true;
-			if (application.wheels.cacheFileChecking)
-			{
-				if (loc.helperFileExists)
-					application.wheels.existingHelperFiles = ListAppend(application.wheels.existingHelperFiles, arguments.name);
-				else
-					application.wheels.nonExistingHelperFiles = ListAppend(application.wheels.nonExistingHelperFiles, arguments.name);
+		if ($get("cacheFileChecking")) {
+			if (local.helperFileExists) {
+				application.wheels.existingHelperFiles = ListAppend(application.wheels.existingHelperFiles, arguments.name);
+			} else {
+				application.wheels.nonExistingHelperFiles = ListAppend(application.wheels.nonExistingHelperFiles, arguments.name);
 			}
 		}
-		if (ListFindNoCase(application.wheels.existingHelperFiles, arguments.name) || loc.helperFileExists)
-			$include(template="#application.wheels.viewPath#/#arguments.name#/helpers.cfm");
+	}
 
-		loc.executeArgs = {};
-		loc.executeArgs.name = arguments.name;
-		$simpleLock(name="controllerLock", type="readonly", execute="$setControllerClassData", executeArgs=loc.executeArgs);
+	// Include controller specific helper file if it exists.
+	if (Len(arguments.name) && (ListFindNoCase(application.wheels.existingHelperFiles, arguments.name) || local.helperFileExists)) {
+		$include(template=local.template);
+	}
 
-		variables.params = arguments.params;
-	</cfscript>
-	<cfreturn this>
-</cffunction>
+	local.executeArgs = {};
+	local.executeArgs.name = arguments.name;
+	local.lockName = "controllerLock" & application.applicationName;
+	$simpleLock(name=local.lockName, type="readonly", execute="$setControllerClassData", executeArgs=local.executeArgs);
+	variables.params = arguments.params;
+	return this;
+}
 
-<cffunction name="$getControllerClassData" returntype="struct" access="public" output="false">
-	<cfreturn variables.$class>
-</cffunction>
+/**
+ * Get the class level data from the controller object in the application scope and set it to this controller.
+ * By class level we mean that it's stored in the controller object in the application scope.
+ */
+public void function $setControllerClassData() {
+	variables.$class = application.wheels.controllers[arguments.name].$getControllerClassData();
+}
+
+</cfscript>

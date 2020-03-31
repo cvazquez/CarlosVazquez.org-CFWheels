@@ -1,17 +1,27 @@
-<cfif StructKeyExists(server, "lucee")>
-	<cfinclude template="caching.cfm">
-	<cfinclude template="filters.cfm">
-	<cfinclude template="flash.cfm">
-	<cfinclude template="initialization.cfm">
-	<cfinclude template="miscellaneous.cfm">
-	<cfinclude template="redirection.cfm">
-	<cfinclude template="rendering.cfm">
-<cfelse>
-	<cfinclude template="wheels/controller/caching.cfm">
-	<cfinclude template="wheels/controller/filters.cfm">
-	<cfinclude template="wheels/controller/flash.cfm">
-	<cfinclude template="wheels/controller/initialization.cfm">
-	<cfinclude template="wheels/controller/miscellaneous.cfm">
-	<cfinclude template="wheels/controller/redirection.cfm">
-	<cfinclude template="wheels/controller/rendering.cfm">
-</cfif>
+<cfscript>
+if (StructKeyExists(server, "lucee")) {
+	include "caching.cfm";
+	include "filters.cfm";
+	include "flash.cfm";
+	include "initialization.cfm";
+	include "layouts.cfm";
+	include "miscellaneous.cfm";
+	include "processing.cfm";
+	include "provides.cfm";
+	include "redirection.cfm";
+	include "rendering.cfm";
+	include "verifies.cfm";
+} else {
+	include "wheels/controller/caching.cfm";
+	include "wheels/controller/filters.cfm";
+	include "wheels/controller/flash.cfm";
+	include "wheels/controller/initialization.cfm";
+	include "wheels/controller/layouts.cfm";
+	include "wheels/controller/miscellaneous.cfm";
+	include "wheels/controller/processing.cfm";
+	include "wheels/controller/provides.cfm";
+	include "wheels/controller/redirection.cfm";
+	include "wheels/controller/rendering.cfm";
+	include "wheels/controller/verifies.cfm";
+}
+</cfscript>

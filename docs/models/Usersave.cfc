@@ -5,7 +5,7 @@
 --->
 <cfcomponent extends="Model">
 
-	<cffunction name="init">
+	<cffunction name="config">
 		<cfset set(dataSourceName="mybloginsert")>
 		<cfset table("users")>
 

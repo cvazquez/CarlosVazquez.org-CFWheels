@@ -1,367 +1,379 @@
-<!--- PUBLIC MODEL INITIALIZATION METHODS --->
+<cfscript>
 
-<cffunction name="afterNew" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after a new object has been initialized (which is usually done with the @new method)."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterNew("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="Method name or list of method names that should be called when this callback event occurs in an object's life cycle (can also be called with the `method` argument).">
-	<cfset $registerCallback(type="afterNew", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after a new object is created.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterCreate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterCreate");
+}
 
-<cffunction name="afterFind" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an existing object has been initialized (which is usually done with the @findByKey or @findOne method)."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `setTime` method after getting objects or records with one of the finder methods --->
-		<cffunction name="init">
-			<cfset afterFind("setTime")>
-		</cffunction>
+/**
+ * Registers method(s) that should be called after an object is deleted.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterDelete(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterDelete");
+}
 
-		<cffunction name="setTime">
-			<cfset arguments.fetchedAt = Now()>
-			<cfreturn arguments>
-		</cffunction>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterFind", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after an existing object has been initialized (which is usually done with the `findByKey` or `findOne` method).
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterFind(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterFind");
+}
 
-<cffunction name="afterInitialization" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an object has been initialized."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterInitialization("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterInitialization", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after an object has been initialized.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterInitialization(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterInitialization");
+}
 
-<cffunction name="beforeValidation" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before an object is validated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeValidation("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeValidation", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after a new object has been initialized (which is usually done with the `new` method).
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods Method name or list of method names that should be called when this callback event occurs in an object's life cycle (can also be called with the `method` argument).
+ */
+public void function afterNew(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterNew");
+}
 
-<cffunction name="beforeValidationOnCreate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before a new object is validated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeValidationOnCreate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeValidationOnCreate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after an object is saved.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterSave(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterSave");
+}
 
-<cffunction name="beforeValidationOnUpdate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before an existing object is validated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeValidationOnUpdate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeValidationOnUpdate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after an existing object is updated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterUpdate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterUpdate");
+}
 
-<cffunction name="afterValidation" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an object is validated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterValidation("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterValidation", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after an object is validated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterValidation(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterValidation");
+}
 
-<cffunction name="afterValidationOnCreate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after a new object is validated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterValidationOnCreate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterValidationOnCreate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after a new object is validated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterValidationOnCreate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterValidationOnCreate");
+}
 
-<cffunction name="afterValidationOnUpdate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an existing object is validated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterValidationOnUpdate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterValidationOnUpdate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called after an existing object is validated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function afterValidationOnUpdate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="afterValidationOnUpdate");
+}
 
-<cffunction name="beforeSave" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before an object is saved."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeSave("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeSave", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called before a new object is created.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeCreate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeCreate");
+}
 
-<cffunction name="beforeCreate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before a new object is created."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeCreate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeCreate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called before an object is deleted.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeDelete(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeDelete");
+}
 
-<cffunction name="beforeUpdate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before an existing object is updated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeUpdate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeUpdate", argumentCollection=arguments)>
-</cffunction>
+/**
+ *  Registers method(s) that should be called before an object is saved.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeSave(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeSave");
+}
 
-<cffunction name="afterCreate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after a new object is created."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterCreate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterCreate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called before an existing object is updated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeUpdate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeUpdate");
+}
 
-<cffunction name="afterUpdate" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an existing object is updated."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterUpdate("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterUpdate", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called before an object is validated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeValidation(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeValidation");
+}
 
-<cffunction name="afterSave" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an object is saved."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterSave("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterSave", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called before a new object is validated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeValidationOnCreate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeValidationOnCreate");
+}
 
-<cffunction name="beforeDelete" returntype="void" access="public" output="false" hint="Registers method(s) that should be called before an object is deleted."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset beforeDelete("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterDelete,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="beforeDelete", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Registers method(s) that should be called before an existing object is validated.
+ *
+ * [section: Model Configuration]
+ * [category: Callback Functions]
+ *
+ * @methods [see:afterNew].
+ */
+public void function beforeValidationOnUpdate(string methods="") {
+	$registerCallback(argumentCollection=arguments, type="beforeValidationOnUpdate");
+}
 
-<cffunction name="afterDelete" returntype="void" access="public" output="false" hint="Registers method(s) that should be called after an object is deleted."
-	examples=
-	'
-		<!--- Instruct Wheels to call the `fixObj` method --->
-		<cfset afterDelete("fixObj")>
-	'
-	categories="model-initialization,callbacks" chapters="object-callbacks" functions="afterCreate,afterFind,afterInitialization,afterNew,afterSave,afterUpdate,afterValidation,afterValidationOnCreate,afterValidationOnUpdate,beforeCreate,beforeDelete,beforeSave,beforeUpdate,beforeValidation,beforeValidationOnCreate,beforeValidationOnUpdate">
-	<cfargument name="methods" type="string" required="false" default="" hint="See documentation for @afterNew.">
-	<cfset $registerCallback(type="afterDelete", argumentCollection=arguments)>
-</cffunction>
+/**
+ * Internal function.
+ */
+public void function $registerCallback(required string type, required string methods) {
 
-<!--- PRIVATE MODEL INITIALIZATION METHODS --->
+	// Create this type in the array if it doesn't already exist.
+	if (!StructKeyExists(variables.wheels.class.callbacks,arguments.type)) {
+		variables.wheels.class.callbacks[arguments.type] = [];
+	}
 
-<cffunction name="$registerCallback" returntype="void" access="public" output="false">
-	<cfargument name="type" type="string" required="true">
-	<cfargument name="methods" type="string" required="true">
-	<cfscript>
-		var loc = {};
-		// create this type in the array if it doesn't already exist
-		if (not StructKeyExists(variables.wheels.class.callbacks,arguments.type))
-			variables.wheels.class.callbacks[arguments.type] = ArrayNew(1);
-		loc.existingCallbacks = ArrayToList(variables.wheels.class.callbacks[arguments.type]);
-		if (StructKeyExists(arguments, "method"))
-			arguments.methods = arguments.method;
-		arguments.methods = $listClean(arguments.methods);
-		loc.iEnd = ListLen(arguments.methods);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-			if (!ListFindNoCase(loc.existingCallbacks, ListGetAt(arguments.methods, loc.i)))
-				ArrayAppend(variables.wheels.class.callbacks[arguments.type], ListGetAt(arguments.methods, loc.i));
-	</cfscript>
-</cffunction>
-
-<cffunction name="$clearCallbacks" returntype="void" access="public" output="false" hint="Removes all callbacks registered for this model. Pass in the `type` argument to only remove callbacks for that specific type.">
-	<cfargument name="type" type="string" required="false" default="" hint="Type of callback (`beforeSave` etc).">
-	<cfscript>
-		var loc = {};
-		// clean up the list of types passed in
-		arguments.type = $listClean(list="#arguments.type#", returnAs="array");
-		// no type(s) was passed in. get all the callback types registered
-		if (ArrayIsEmpty(arguments.type))
-		{
-			arguments.type = ListToArray(StructKeyList(variables.wheels.class.callbacks));
+	local.existingCallbacks = ArrayToList(variables.wheels.class.callbacks[arguments.type]);
+	if (StructKeyExists(arguments, "method")) {
+		arguments.methods = arguments.method;
+	}
+	arguments.methods = $listClean(arguments.methods);
+	local.iEnd = ListLen(arguments.methods);
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+		if (!ListFindNoCase(local.existingCallbacks, ListGetAt(arguments.methods, local.i))) {
+			ArrayAppend(variables.wheels.class.callbacks[arguments.type], ListGetAt(arguments.methods, local.i));
 		}
-		// loop through each callback type and clear it
-		loc.iEnd = ArrayLen(arguments.type);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-		{
-			variables.wheels.class.callbacks[arguments.type[loc.i]] = [];
+	}
+}
+
+/**
+ * Internal function.
+ */
+public void function $clearCallbacks(string type="") {
+	arguments.type = $listClean(list="#arguments.type#", returnAs="array");
+
+	// No type(s) was passed in. get all the callback types registered.
+	if (ArrayIsEmpty(arguments.type)) {
+		arguments.type = ListToArray(StructKeyList(variables.wheels.class.callbacks));
+	}
+
+	// Loop through each callback type and clear it.
+	local.iEnd = ArrayLen(arguments.type);
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+		variables.wheels.class.callbacks[arguments.type[local.i]] = [];
+	}
+}
+
+/**
+ * Internal function.
+ */
+public any function $callbacks(string type="") {
+	if (Len(arguments.type)) {
+		if (StructKeyExists(variables.wheels.class.callbacks, arguments.type)) {
+			local.rv = variables.wheels.class.callbacks[arguments.type];
+		} else {
+			local.rv = [];
 		}
-	</cfscript>
-</cffunction>
+	} else {
+		local.rv = variables.wheels.class.callbacks;
+	}
+	return local.rv;
+}
 
-<cffunction name="$callbacks" returntype="any" access="public" output="false" hint="Returns all registered callbacks for this model (as a struct). Pass in the `type` argument to only return callbacks for that specific type (as an array).">
-	<cfargument name="type" type="string" required="false" default="" hint="See documentation for @$clearCallbacks.">
-	<cfscript>
-		if (Len(arguments.type))
-		{
-			if (StructKeyExists(variables.wheels.class.callbacks,arguments.type))
-				return variables.wheels.class.callbacks[arguments.type];
-			return ArrayNew(1);
-		}
-		return variables.wheels.class.callbacks;
-	</cfscript>
-</cffunction>
+/**
+ * Internal function.
+ */
+public boolean function $callback(
+	required string type,
+	required boolean execute,
+	any collection=""
+) {
+	if (arguments.execute) {
 
+		// Get all callbacks for the type and loop through them all until the end or one of them returns false.
+		local.callbacks = $callbacks(arguments.type);
+		local.iEnd = ArrayLen(local.callbacks);
+		for (local.i = 1; local.i <= local.iEnd; local.i++) {
+			local.method = local.callbacks[local.i];
+			if (arguments.type == "afterFind") {
 
-<!--- PRIVATE MODEL OBJECT METHODS --->
-
-<cffunction name="$callback" returntype="boolean" access="public" output="false" hint="Executes all callback methods for a specific type. Will stop execution on the first callback that returns `false`.">
-	<cfargument name="type" type="string" required="true" hint="See documentation for @$clearCallbacks.">
-	<cfargument name="execute" type="boolean" required="true" hint="A query is passed in here for `afterFind` callbacks.">
-	<cfargument name="collection" type="any" required="false" default="" hint="A query is passed in here for `afterFind` callbacks.">
-	<cfscript>
-		var loc = {};
-
-		if (!arguments.execute)
-			return true;
-
-		// get all callbacks for the type and loop through them all until the end or one of them returns false
-		loc.callbacks = $callbacks(arguments.type);
-		loc.iEnd = ArrayLen(loc.callbacks);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-		{
-			loc.method = loc.callbacks[loc.i];
-			if (arguments.type == "afterFind")
-			{
-				// since this is an afterFind callback we need to handle it differently
-				if (IsQuery(arguments.collection))
-				{
-					loc.returnValue = $queryCallback(method=loc.method, collection=arguments.collection);
-				}
-				else
-				{
-					loc.invokeArgs = properties();
-					loc.returnValue = $invoke(method=loc.method, invokeArgs=loc.invokeArgs);
-					if (StructKeyExists(loc, "returnValue") && IsStruct(loc.returnValue))
-					{
-						setProperties(loc.returnValue);
-						StructDelete(loc, "returnValue");
+				// Since this is an afterFind callback we need to handle it differently.
+				if (IsQuery(arguments.collection)) {
+					local.rv = $queryCallback(method=local.method, collection=arguments.collection);
+				} else {
+					local.invokeArgs = properties();
+					local.rv = $invoke(method=local.method, invokeArgs=local.invokeArgs);
+					if (StructKeyExists(local, "rv") && IsStruct(local.rv)) {
+						setProperties(local.rv);
+						StructDelete(local, "rv");
 					}
 				}
-			}
-			else
-			{
-				// this is a regular callback so just call the method
-				loc.returnValue = $invoke(method=loc.method);
+
+			} else {
+
+				// This is a regular callback so just call the method.
+				local.rv = $invoke(method=local.method);
+
 			}
 
-			// break the loop if the callback returned false
-			if (StructKeyExists(loc, "returnValue") && IsBoolean(loc.returnValue) && !loc.returnValue)
+			// Break the loop if the callback returned false.
+			if (StructKeyExists(local, "rv") && IsBoolean(local.rv) && !local.rv) {
 				break;
-		}
-
-		// return true by default (happens when no callbacks are set or none of the callbacks returned a result)
-		if (!StructKeyExists(loc, "returnValue"))
-			loc.returnValue = true;
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
-
-<cffunction name="$queryCallback" returntype="boolean" access="public" output="false" hint="Loops over the passed in query, calls the callback method for each row and changes the query based on the arguments struct that is passed back.">
-	<cfargument name="method" type="string" required="true" hint="The method to call.">
-	<cfargument name="collection" type="query" required="true" hint="See documentation for @$callback.">
-	<cfscript>
-		var loc = {};
-
-		// we return true by default
-		// will be overridden only if the callback method returns false on one of the iterations
-		loc.returnValue = true;
-
-		// loop over all query rows and execute the callback method for each
-		loc.jEnd = arguments.collection.recordCount;
-		for (loc.j=1; loc.j <= loc.jEnd; loc.j++)
-		{
-			// get the values in the current query row so that we can pass them in as arguments to the callback method
-			loc.invokeArgs = {};
-			loc.kEnd = ListLen(arguments.collection.columnList);
-			for (loc.k=1; loc.k <= loc.kEnd; loc.k++)
-			{
-				loc.kItem = ListGetAt(arguments.collection.columnList, loc.k);
-				try // coldfusion has a problem with empty strings in queries for bit types
-				{
-					loc.invokeArgs[loc.kItem] = arguments.collection[loc.kItem][loc.j];
-				}
-				catch (Any e)
-				{
-					loc.invokeArgs[loc.kItem] = "";
-				}
 			}
 
-			// execute the callback method
-			loc.result = $invoke(method=arguments.method, invokeArgs=loc.invokeArgs);
+		}
 
-			if (StructKeyExists(loc, "result"))
-			{
-				if (IsStruct(loc.result))
-				{
-					// the arguments struct was returned so we need to add the changed values to the query row
-					for (loc.key in loc.result)
-					{
-						// add a new column to the query if a value was passed back for a column that did not exist originally
-						if (!ListFindNoCase(arguments.collection.columnList, loc.key))
-							QueryAddColumn(arguments.collection, loc.key, ArrayNew(1));
-						arguments.collection[loc.key][loc.j] = loc.result[loc.key];
+	}
+
+	// Return true by default (happens when no callbacks are set or none of the callbacks returned a result).
+	if (!StructKeyExists(local, "rv")) {
+		local.rv = true;
+	}
+
+	return local.rv;
+}
+
+/**
+ * Internal function.
+ */
+public boolean function $queryCallback(required string method, required query collection) {
+
+	// We return true by default, will be overridden only if the callback method returns false on one of the iterations.
+	local.rv = true;
+
+	// Loop over all query rows and execute the callback method for each.
+	local.iEnd = arguments.collection.recordCount;
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+
+		// Get the values in the current query row so that we can pass them in as arguments to the callback method.
+		local.invokeArgs = {};
+		local.jEnd = ListLen(arguments.collection.columnList);
+		for (local.j = 1; local.j <= local.jEnd; local.j++) {
+			local.item = ListGetAt(arguments.collection.columnList, local.j);
+
+			// Coldfusion has a problem with empty strings in queries for bit types.
+			try {
+				local.invokeArgs[local.item] = arguments.collection[local.item][local.i];
+			} catch (any e) {
+				local.invokeArgs[local.item] = "";
+			}
+
+		}
+
+		// Execute the callback method.
+		local.result = $invoke(method=arguments.method, invokeArgs=local.invokeArgs);
+
+		if (StructKeyExists(local, "result")) {
+			if (IsStruct(local.result)) {
+
+				// The arguments struct was returned so we need to add the changed values to the query row.
+				for (local.key in local.result) {
+
+					// Add a new column to the query if a value was passed back for a column that did not exist originally.
+					if (!ListFindNoCase(arguments.collection.columnList, local.key)) {
+						QueryAddColumn(arguments.collection, local.key, []);
 					}
+
+					arguments.collection[local.key][local.i] = local.result[local.key];
 				}
-				else if (IsBoolean(loc.result) && !loc.result)
-				{
-					// break the loop and return false if the callback returned false
-					loc.returnValue = false;
-					break;
-				}
+			} else if (IsBoolean(local.result) && !local.result) {
+
+				// Break the loop and return false if the callback returned false.
+				local.rv = false;
+				break;
+
 			}
 		}
+	}
 
-		// update the request with a hash of the query if it changed so that we can find it with pagination
-		loc.querykey = $hashedKey(arguments.collection);
-		if (!StructKeyExists(request.wheels, loc.querykey))
-			request.wheels[loc.querykey] = variables.wheels.class.modelName;
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
+	// Update the request with a hash of the query if it changed so that we can find it with pagination.
+	local.querykey = $hashedKey(arguments.collection);
+	if (!StructKeyExists(request.wheels, local.querykey)) {
+		request.wheels[local.querykey] = variables.wheels.class.modelName;
+	}
+
+	return local.rv;
+}
+
+</cfscript>

@@ -5,7 +5,7 @@
 --->
 <cfcomponent extends="Model">
 
-	<cffunction name="init">
+	<cffunction name="config">
 		<cfset hasMany("entrydiscussions")>
 		<cfset validatesPresenceOf(properties="firstName,lastName,email")>
 		<cfset validatesLengthOf(properties="firstName,lastName", maximum=50)>

@@ -1,204 +1,208 @@
-<!--- PUBLIC MODEL INITIALIZATION METHODS --->
+<cfscript>
 
-<cffunction name="belongsTo" returntype="void" access="public" output="false" hint="Sets up a `belongsTo` association between this model and the specified one. Use this association when this model contains a foreign key referencing another model."
-	examples=
-	'
-		<!--- Specify that instances of this model belong to an author. (The table for this model should have a foreign key set on it, typically named `authorid`.) --->
-		<cfset belongsTo("author")>
+/**
+ * Sets up a `belongsTo` association between this model and the specified one.
+ * Use this association when this model contains a foreign key referencing another model.
+ *
+ * [section: Model Configuration]
+ * [category: Association Functions]
+ *
+ * @name Gives the association a name that you refer to when working with the association (in the `include` argument to `findAll`, to name one example).
+ * @modelName Name of associated model (usually not needed if you follow CFWheels conventions because the model name will be deduced from the `name` argument).
+ * @foreignKey Foreign key property name (usually not needed if you follow CFWheels conventions since the foreign key name will be deduced from the `name` argument).
+ * @joinKey Column name to join to if not the primary key (usually not needed if you follow CFWheels conventions since the join key will be the table's primary key/keys).
+ * @joinType Use to set the join type when joining associated tables. Possible values are `inner` (for `INNER JOIN`) and `outer` (for `LEFT OUTER JOIN`).
+*/
+public void function belongsTo(
+	required string name,
+	string modelName="",
+	string foreignKey="",
+	string joinKey="",
+	string joinType
+) {
+	$args(name="belongsTo", args=arguments);
+	arguments.type = "belongsTo";
 
-		<!--- Same as above, but because we have broken away from the foreign key naming convention, we need to set `modelName` and `foreignKey` --->
-		<cfset belongsTo(name="bookWriter", modelName="author", foreignKey="authorId")>
-	'
-	categories="model-initialization,associations" chapters="associations" functions="hasOne,hasMany">
-	<cfargument name="name" type="string" required="true" hint="Gives the association a name that you refer to when working with the association (in the `include` argument to @findAll, to name one example).">
-	<cfargument name="modelName" type="string" required="false" default="" hint="Name of associated model (usually not needed if you follow Wheels conventions because the model name will be deduced from the `name` argument).">
-	<cfargument name="foreignKey" type="string" required="false" default="" hint="Foreign key property name (usually not needed if you follow Wheels conventions since the foreign key name will be deduced from the `name` argument).">
-	<cfargument name="joinKey" type="string" required="false" default="" hint="Column name to join to if not the primary key (usually not needed if you follow wheels conventions since the join key will be the tables primary key/keys).">
-	<cfargument name="joinType" type="string" required="false" hint="Use to set the join type when joining associated tables. Possible values are `inner` (for `INNER JOIN`) and `outer` (for `LEFT OUTER JOIN`).">
-	<cfscript>
-		$args(name="belongsTo", args=arguments);
-		// deprecate the class argument (change of name only)
-		if (StructKeyExists(arguments, "class"))
-		{
-			$deprecated("The `class` argument will be deprecated in a future version of Wheels, please use the `modelName` argument instead");
-			arguments.modelName = arguments.class;
-			StructDelete(arguments, "class");
+	// The dynamic shortcut methods to add to this class (e.g. "post" , "hasPost").
+	arguments.methods = "";
+	arguments.methods = ListAppend(arguments.methods, arguments.name);
+	arguments.methods = ListAppend(arguments.methods, "has#capitalize(arguments.name)#");
+
+	$registerAssociation(argumentCollection=arguments);
+}
+
+/**
+ * Sets up a `hasMany` association between this model and the specified one.
+ *
+ * [section: Model Configuration]
+ * [category: Association Functions]
+ *
+ * @name [see:belongsTo].
+ * @modelName [see:belongsTo].
+ * @foreignKey [see:belongsTo].
+ * @joinKey [see:belongsTo].
+ * @joinType [see:belongsTo].
+ * @dependent Defines how to handle dependent model objects when you delete an object from this model. `delete` / `deleteAll` deletes the record(s) (`deleteAll` bypasses object instantiation). `remove` / `removeAll` sets the forein key field(s) to `NULL` (`removeAll` bypasses object instantiation).
+ * @shortcut Set this argument to create an additional dynamic method that gets the object(s) from the other side of a many-to-many association.
+ * @through Set this argument if you need to override CFWheels conventions when using the `shortcut` argument. Accepts a list of two association names representing the chain from the opposite side of the many-to-many relationship to this model.
+ */
+public void function hasMany(
+	required string name,
+	string modelName="",
+	string foreignKey="",
+	string joinKey="",
+	string joinType,
+	string dependent,
+	string shortcut="",
+	string through="#singularize(arguments.shortcut)#,#arguments.name#"
+) {
+	$args(name="hasMany", args=arguments);
+	local.singularizedName = capitalize(singularize(arguments.name));
+	local.capitalizedName = capitalize(arguments.name);
+	arguments.type = "hasMany";
+
+	// The dynamic shortcut methods to add to this class (e.g. "comment", "commentCount", "addComment" etc).
+	arguments.methods = "";
+	arguments.methods = ListAppend(arguments.methods, arguments.name);
+	arguments.methods = ListAppend(arguments.methods, "#local.singularizedName#Count");
+	arguments.methods = ListAppend(arguments.methods, "add#local.singularizedName#");
+	arguments.methods = ListAppend(arguments.methods, "create#local.singularizedName#");
+	arguments.methods = ListAppend(arguments.methods, "delete#local.singularizedName#");
+	arguments.methods = ListAppend(arguments.methods, "deleteAll#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "findOne#local.singularizedName#");
+	arguments.methods = ListAppend(arguments.methods, "has#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "new#local.singularizedName#");
+	arguments.methods = ListAppend(arguments.methods, "remove#local.singularizedName#");
+	arguments.methods = ListAppend(arguments.methods, "removeAll#local.capitalizedName#");
+
+	$registerAssociation(argumentCollection=arguments);
+}
+
+/**
+ * Sets up a `hasOne` association between this model and the specified one.
+ *
+ * [section: Model Configuration]
+ * [category: Association Functions]
+ *
+ * @name [see:belongsTo].
+ * @modelName [see:belongsTo].
+ * @foreignKey [see:belongsTo].
+ * @joinKey [see:belongsTo].
+ * @joinType [see:belongsTo].
+ * @dependent [see:hasMany].
+ */
+public void function hasOne(
+	required string name,
+	string modelName="",
+	string foreignKey="",
+	string joinKey="",
+	string joinType,
+	string dependent
+) {
+	$args(name="hasOne", args=arguments);
+	local.capitalizedName = capitalize(arguments.name);
+	arguments.type = "hasOne";
+
+	// The dynamic shortcut methods to add to this class (e.g. "profile", "createProfile", "deleteProfile" etc).
+	arguments.methods = "";
+	arguments.methods = ListAppend(arguments.methods, arguments.name);
+	arguments.methods = ListAppend(arguments.methods, "create#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "delete#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "has#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "new#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "remove#local.capitalizedName#");
+	arguments.methods = ListAppend(arguments.methods, "set#local.capitalizedName#");
+
+	$registerAssociation(argumentCollection=arguments);
+}
+
+/*
+ * Registers the association info in the model object on the application scope.
+ */
+public void function $registerAssociation() {
+
+	// Assign the name for the association.
+	local.associationName = arguments.name;
+
+	// Default our nesting to false and set other nesting properties.
+	arguments.nested = {};
+	arguments.nested.allow = false;
+	arguments.nested.delete = false;
+	arguments.nested.autosave = false;
+	arguments.nested.sortProperty = "";
+	arguments.nested.rejectIfBlank = "";
+
+	// Infer model name from association name unless developer specified it already.
+	if (!Len(arguments.modelName)) {
+		if (arguments.type == "hasMany") {
+			arguments.modelName = singularize(local.associationName);
+		} else {
+			arguments.modelName = local.associationName;
 		}
-
-		arguments.type = "belongsTo";
-		arguments.methods = "#arguments.name#,has#capitalize(arguments.name)#";
-		$registerAssociation(argumentCollection=arguments);
-	</cfscript>
-</cffunction>
-
-<cffunction name="hasMany" returntype="void" access="public" output="false" hint="Sets up a `hasMany` association between this model and the specified one."
-	examples=
-	'
-		<!---
-			Example1: Specify that instances of this model has many comments.
-			(The table for the associated model, not the current, should have the foreign key set on it.)
-		--->
-		<cfset hasMany("comments")>
-
-		<!---
-			Example 2: Specify that this model (let''s call it `reader` in this case) has many subscriptions and setup a shortcut to the `publication` model.
-			(Useful when dealing with many-to-many relationships.)
-		--->
-		<cfset hasMany(name="subscriptions", shortcut="publications")>
-		
-		<!--- Example 3: Automatically delete all associated `comments` whenever this object is deleted --->
-		<cfset hasMany(name="comments", dependent="deleteAll")>
-		
-		<!---
-			Example 4: When not following Wheels naming conventions for associations, it can get complex to define how a `shortcut` works.
-			In this example, we are naming our `shortcut` differently than the actual model''s name.
-		--->
-		<!--- In the models/Customer.cfc `init()` method --->
-		<cfset hasMany(name="subscriptions", shortcut="magazines", through="publication,subscriptions")>
-		
-		<!--- In the models/Subscriptions.cfc `init()` method --->
-		<cfset belongsTo("customer")>
-		<cfset belongsTo("publication")>
-		
-		<!--- In the models/Publication `init()` method --->
-		<cfset hasMany("subscriptions")>
-	'
-	categories="model-initialization,associations" chapters="associations" functions="belongsTo,hasOne">
-	<cfargument name="name" type="string" required="true" hint="See documentation for @belongsTo.">
-	<cfargument name="modelName" type="string" required="false" default="" hint="See documentation for @belongsTo.">
-	<cfargument name="foreignKey" type="string" required="false" default="" hint="See documentation for @belongsTo.">
-	<cfargument name="joinKey" type="string" required="false" default="" hint="See documentation for @belongsTo.">
-	<cfargument name="joinType" type="string" required="false" hint="See documentation for @belongsTo.">
-	<cfargument name="dependent" type="string" required="false" hint="Defines how to handle dependent models when you delete a record from this model. Set to `delete` to instantiate associated models and call their @delete method, `deleteAll` to delete without instantiating, `removeAll` to remove the foreign key, or `false` to do nothing.">
-	<cfargument name="shortcut" type="string" required="false" default="" hint="Set this argument to create an additional dynamic method that gets the object(s) from the other side of a many-to-many association.">
-	<cfargument name="through" type="string" required="false" default="#singularize(arguments.shortcut)#,#arguments.name#" hint="Set this argument if you need to override Wheels conventions when using the `shortcut` argument. Accepts a list of two association names representing the chain from the opposite side of the many-to-many relationship to this model.">
-	<cfscript>
-		var singularizeName = capitalize(singularize(arguments.name));
-		var capitalizeName = capitalize(arguments.name);
-		$args(name="hasMany", args=arguments);
-		// deprecate the class argument (change of name only)
-		if (StructKeyExists(arguments, "class"))
-		{
-			$deprecated("The `class` argument will be deprecated in a future version of Wheels, please use the `modelName` argument instead");
-			arguments.modelName = arguments.class;
-			StructDelete(arguments, "class");
-		}
-
-		arguments.type = "hasMany";
-		arguments.methods = "#arguments.name#,#singularizeName#Count,add#singularizeName#,create#singularizeName#,delete#singularizeName#,deleteAll#capitalizeName#,findOne#singularizeName#,has#capitalizeName#,new#singularizeName#,remove#singularizeName#,removeAll#capitalizeName#";
-		$registerAssociation(argumentCollection=arguments);
-	</cfscript>
-</cffunction>
-
-<cffunction name="hasOne" returntype="void" access="public" output="false" hint="Sets up a `hasOne` association between this model and the specified one."
-	examples=
-	'
-		<!--- Specify that instances of this model has one profile. (The table for the associated model, not the current, should have the foreign key set on it.) --->
-		<cfset hasOne("profile")>
-
-		<!--- Same as above but setting the `joinType` to `inner`, which basically means this model should always have a record in the `profiles` table --->
-		<cfset hasOne(name="profile", joinType="inner")>
-		
-		<!--- Automatically delete the associated `profile` whenever this object is deleted --->
-		<cfset hasMany(name="comments", dependent="delete")>
-	'
-	categories="model-initialization,associations" chapters="associations" functions="belongsTo,hasMany">
-	<cfargument name="name" type="string" required="true" hint="See documentation for @belongsTo.">
-	<cfargument name="modelName" type="string" required="false" default="" hint="See documentation for @belongsTo.">
-	<cfargument name="foreignKey" type="string" required="false" default="" hint="See documentation for @belongsTo.">
-	<cfargument name="joinKey" type="string" required="false" default="" hint="See documentation for @belongsTo.">
-	<cfargument name="joinType" type="string" required="false" hint="See documentation for @belongsTo.">
-	<cfargument name="dependent" type="string" required="false" hint="See documentation for @hasMany.">
-	<cfscript>
-		var capitalizeName = capitalize(arguments.name);
-		$args(name="hasOne", args=arguments);
-		// deprecate the class argument (change of name only)
-		if (StructKeyExists(arguments, "class"))
-		{
-			$deprecated("The `class` argument will be deprecated in a future version of Wheels, please use the `modelName` argument instead");
-			arguments.modelName = arguments.class;
-			StructDelete(arguments, "class");
-		}
-
-		arguments.type = "hasOne";
-		arguments.methods = "#arguments.name#,create#capitalizeName#,delete#capitalizeName#,has#capitalizeName#,new#capitalizeName#,remove#capitalizeName#,set#capitalizeName#";
-		$registerAssociation(argumentCollection=arguments);
-	</cfscript>
-</cffunction>
-
-<!--- PRIVATE MODEL INITIALIZATION METHODS --->
-
-<cffunction name="$registerAssociation" returntype="void" access="public" output="false" hint="Called from the association methods above to save the data to the class struct of the model.">
-	<cfscript>
-		// assign the name for the association
-		var associationName = arguments.name;
-		
-		// default our nesting to false and set other nesting properties
-		arguments.nested = {};
-		arguments.nested.allow = false;
-		arguments.nested.delete = false;
-		arguments.nested.autosave = false;
-		arguments.nested.sortProperty = "";
-		arguments.nested.rejectIfBlank = "";
-		// remove the name argument from the arguments struct
-		structDelete(arguments, "name", false);
-		// infer model name and foreign key from association name unless developer specified it already
-		if (!Len(arguments.modelName))
-		{
-			if (arguments.type == "hasMany")
-				arguments.modelName = singularize(associationName);
-			else
-				arguments.modelName = associationName;
-		}
-		// store all the settings for the association in the class struct (one struct per association with the name of the association as the key)
-		variables.wheels.class.associations[associationName] = arguments;
-	</cfscript>
-</cffunction>
-
-
-<cffunction name="$deleteDependents" returntype="void" access="public" output="false">
-	<cfscript>
-	var loc = {};
-	for (loc.key in variables.wheels.class.associations)
-	{
-		if (ListFindNoCase("hasMany,hasOne", variables.wheels.class.associations[loc.key].type) && variables.wheels.class.associations[loc.key].dependent != false)
-		{
-			loc.all = "";
-			if (variables.wheels.class.associations[loc.key].type == "hasMany")
-				loc.all = "All";
-		
-			switch(variables.wheels.class.associations[loc.key].dependent)
-			{
-				case "delete":
-				{
-					loc.invokeArgs = {};
-					loc.invokeArgs.instantiate = true;
-					$invoke(componentReference=this, method="delete#loc.all##loc.key#", invokeArgs=loc.invokeArgs);
-					break;
-				}
-				case "remove":
-				{
-					loc.invokeArgs = {};
-					loc.invokeArgs.instantiate = true;
-					$invoke(componentReference=this, method="remove#loc.all##loc.key#", invokeArgs=loc.invokeArgs);
-					break;
-				}
-				case "deleteAll":
-				{
-					$invoke(componentReference=this, method="delete#loc.all##loc.key#");
-					break;
-				}
-				case "removeAll":
-				{
-					$invoke(componentReference=this, method="remove#loc.all##loc.key#");
-					break;
-				}
-				default:
-				{
-					$throw(type="Wheels.InvalidArgument", message="'#variables.wheels.class.associations[loc.key].dependent#' is not a valid dependency.", extendedInfo="Use `delete`, `deleteAll`, `removeAll` or false.");
-				}
-			}
-		}	
 	}
-	</cfscript>
-</cffunction>
+
+	// Set pluralized association name, to be used when aliasing the table.
+	arguments.pluralizedName = pluralize(local.associationName);
+
+	// Set a friendly label for the foreign key on belongsTo associations (e.g. 'userid' becomes 'User');
+	if (arguments.type == "belongsTo") {
+		// Get the property name using the specified foreign key or the wheels convention of modelName + id;
+		if (Len(arguments.foreignKey)) {
+			local.propertyName = arguments.foreignKey; // custom foreign key column
+		} else {
+			local.propertyName = "#arguments.modelName#id"; // wheels convention
+		}
+		// Set the label (if it hasn't already been specified)
+		if (!StructKeyExists(variables.wheels.class.mapping, local.propertyName) || !StructKeyExists(variables.wheels.class.mapping[local.propertyName], "label")) {
+			property(name=local.propertyName, label=humanize(arguments.name));
+		}
+	}
+
+	// Store all the settings for the association in the class data.
+	// One struct per association with the name of the association as the key.
+	// We delete the name from the arguments because we use it as the key and don't need to store it elsewhere.
+	StructDelete(arguments, "name");
+	variables.wheels.class.associations[local.associationName] = arguments;
+}
+
+/*
+ * Called when a model object is deleted (e.g. post.delete()).
+ * Deletes all associated records (or sets their foreign key values to NULL).
+ */
+public void function $deleteDependents() {
+	for (local.key in variables.wheels.class.associations) {
+		local.association = variables.wheels.class.associations[local.key];
+		if (ListFindNoCase("hasMany,hasOne", local.association.type) && local.association.dependent != false) {
+			local.all = "";
+			if (local.association.type == "hasMany") {
+				local.all = "All";
+			}
+			switch (local.association.dependent) {
+				case "delete":
+					local.invokeArgs = {};
+					local.invokeArgs.instantiate = true;
+					$invoke(componentReference=this, method="delete#local.all##local.key#", invokeArgs=local.invokeArgs);
+					break;
+				case "remove":
+					local.invokeArgs = {};
+					local.invokeArgs.instantiate = true;
+					$invoke(componentReference=this, method="remove#local.all##local.key#", invokeArgs=local.invokeArgs);
+					break;
+				case "deleteAll":
+					$invoke(componentReference=this, method="delete#local.all##local.key#");
+					break;
+				case "removeAll":
+					$invoke(componentReference=this, method="remove#local.all##local.key#");
+					break;
+				default:
+					Throw(
+						type="Wheels.InvalidArgument",
+						message="'#local.association.dependent#' is not a valid dependency.",
+						extendedInfo="Use `delete`, `deleteAll`, `remove`, `removeAll` or `false`."
+					);
+			}
+		}
+	}
+}
+
+</cfscript>

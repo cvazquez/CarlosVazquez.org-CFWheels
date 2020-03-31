@@ -1,1 +1,9 @@
-<cffunction name="onRequest" returntype="void" access="public" output="true"><cfargument name="targetpage" type="any" required="true"><cflock name="wheelsReloadLock" type="readOnly" timeout="180"><cfinclude template="#arguments.targetpage#"></cflock></cffunction>
+<cfscript>
+
+public void function onRequest(required targetpage) {
+	lock name="reloadLock#application.applicationName#" type="readOnly" timeout="180" {
+		include "#arguments.targetpage#";
+	}
+}
+
+</cfscript>

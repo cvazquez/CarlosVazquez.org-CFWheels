@@ -1,296 +1,427 @@
-<cfcomponent output="false">
-	<cfinclude template="../../global/cfml.cfm">
+component output=false {
+	include "../../global/functions.cfm";
+	include "cfquery.cfm";
 
-	<cffunction name="init" access="public" returntype="any" output="false">
-		<cfargument name="datasource" type="string" required="true">
-		<cfargument name="username" type="string" required="true">
-		<cfargument name="password" type="string" required="true">
-		<cfset variables.instance.connection = arguments>
-		<cfreturn this>
-	</cffunction>
+	/**
+	 * Initialize and return the adapter object.
+	 */
+	public any function $init(required string dataSource, required string username, required string password) {
+		variables.dataSource = arguments.dataSource;
+		variables.username = arguments.username;
+		variables.password = arguments.password;
+		return this;
+	}
 
-	<cffunction name="$tableName" returntype="string" access="public" output="false">
-		<cfargument name="list" type="string" required="true">
-		<cfargument name="action" type="string" required="true">
-		<cfscript>
-			var loc = {};
-			loc.returnValue = "";
-			loc.iEnd = ListLen(arguments.list);
-			for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-			{
-				loc.iItem = ListGetAt(arguments.list, loc.i);
-				if (arguments.action == "remove")
-					loc.iItem = ListRest(loc.iItem, "."); // removes table names
-				loc.returnValue = ListAppend(loc.returnValue, loc.iItem);
-			}
-		</cfscript>
-		<cfreturn loc.returnValue>
-	</cffunction>
+	/**
+	 * Set a default for the column name that holds the last inserted auto-incrementing primary key value.
+	 * Individual database adapters will override when necessary.
+	 */
+	public string function $generatedKey() {
+		return "generated_key";
+	}
 
-	<cffunction name="$columnAlias" returntype="string" access="public" output="false">
-		<cfargument name="list" type="string" required="true">
-		<cfargument name="action" type="string" required="true">
-		<cfscript>
-			var loc = {};
-			loc.returnValue = "";
-			loc.iEnd = ListLen(arguments.list);
-			for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-			{
-				loc.iItem = ListGetAt(arguments.list, loc.i);
-				if (Find(" AS ", loc.iItem))
-				{
-					loc.sort = "";
-					if (Right(loc.iItem, 4) == " ASC" || Right(loc.iItem, 5) == " DESC")
-					{
-						loc.sort = " " & Reverse(SpanExcluding(Reverse(loc.iItem), " "));
-						loc.iItem = Mid(loc.iItem, 1, Len(loc.iItem)-Len(loc.sort));
-					}
-					loc.alias = Reverse(SpanExcluding(Reverse(loc.iItem), " "));
-					if (arguments.action == "keep")
-							loc.iItem = loc.alias; // keeps the alias only
-					else if (arguments.action == "remove")
-						loc.iItem = Replace(loc.iItem, " AS " & loc.alias, ""); // removes the alias
-					loc.iItem = loc.iItem & loc.sort;
-				}
-				loc.returnValue = ListAppend(loc.returnValue, loc.iItem);
-			}
-		</cfscript>
-		<cfreturn loc.returnValue>
-	</cffunction>
-
-	<cffunction name="$removeColumnAliasesInOrderClause" returntype="array" access="public" output="false">
-		<cfargument name="sql" type="array" required="true">
-		<cfscript>
-			var loc = {};
-			loc.returnValue = arguments.sql;
-			if (IsSimpleValue(loc.returnValue[ArrayLen(loc.returnValue)]) && Left(loc.returnValue[ArrayLen(loc.returnValue)], 9) == "ORDER BY ")
-			{
-				// remove the column aliases from the order by clause (this is passed in so that we can handle sub queries with calculated properties)
-				loc.pos = ArrayLen(loc.returnValue);
-				loc.orderByClause = ReplaceNoCase(loc.returnValue[loc.pos], "ORDER BY ", "");
-				loc.returnValue[loc.pos] = "ORDER BY " & $columnAlias(list=loc.orderByClause, action="remove");
-			}
-		</cfscript>
-		<cfreturn loc.returnValue>
-	</cffunction>
-
-	<cffunction name="$addColumnsToSelectAndGroupBy" returntype="array" access="public" output="false">
-		<cfargument name="sql" type="array" required="true">
-		<cfscript>
-			var loc = {};
-			loc.returnValue = arguments.sql;
-			if (IsSimpleValue(loc.returnValue[ArrayLen(loc.returnValue)]) && Left(loc.returnValue[ArrayLen(loc.returnValue)], 8) IS "ORDER BY" && IsSimpleValue(loc.returnValue[ArrayLen(loc.returnValue)-1]) && Left(loc.returnValue[ArrayLen(loc.returnValue)-1], 8) IS "GROUP BY")
-			{
-				loc.iEnd = ListLen(loc.returnValue[ArrayLen(loc.returnValue)]);
-				for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-				{
-					loc.item = Trim(ReplaceNoCase(ReplaceNoCase(ReplaceNoCase(ListGetAt(loc.returnValue[ArrayLen(loc.returnValue)], loc.i), "ORDER BY ", ""), " ASC", ""), " DESC", ""));
-					if (!ListFindNoCase(ReplaceNoCase(loc.returnValue[ArrayLen(loc.returnValue)-1], "GROUP BY ", ""), loc.item))
-						loc.returnValue[ArrayLen(loc.returnValue)-1] = ListAppend(loc.returnValue[ArrayLen(loc.returnValue)-1], loc.item);
-					if (!ListFindNoCase(ReplaceNoCase(loc.returnValue[1], "SELECT ", ""), loc.item))
-						loc.returnValue[1] = ListAppend(loc.returnValue[1], loc.item);
-				}
-			}
-		</cfscript>
-		<cfreturn loc.returnValue>
-	</cffunction>
-
-	<cffunction name="$getColumns" returntype="query" access="public" output="false" hint="retrieves all the column information from a table">
-		<cfargument name="tableName" type="string" required="true" hint="the table to retrieve column information for">
-		<cfscript>
-			var loc = {};
-			loc.args = duplicate(variables.instance.connection);
-			loc.args.table = arguments.tableName;
-			if (application.wheels.showErrorInformation)
-			{
-				try
-				{
-					loc.columns = $getColumnInfo(argumentCollection=loc.args);
-				}
-				catch (Any e)
-				{
-					$throw(type="Wheels.TableNotFound", message="The `#arguments.tableName#` table could not be found in the database.", extendedInfo="Add a table named `#arguments.tableName#` to your database or tell Wheels to use a different table for this model. For example you can tell a `user` model to use a table called `tbl_users` by creating a `User.cfc` file in the `models` folder, creating an `init` method inside it and then calling `table(""tbl_users"")` from within it.");
-				}
-			}
-			else
-			{
-				loc.columns = $getColumnInfo(argumentCollection=loc.args);
-			}
-		</cfscript>
-		<cfreturn loc.columns>
-	</cffunction>
-
-	<cffunction name="$getValidationType" returntype="string" access="public" output="false">
-		<cfargument name="type" type="string" required="true">
-		<cfswitch expression="#arguments.type#">
-			<cfcase value="CF_SQL_DECIMAL,CF_SQL_DOUBLE,CF_SQL_FLOAT,CF_SQL_MONEY,CF_SQL_MONEY4,CF_SQL_NUMERIC,CF_SQL_REAL" delimiters=",">
-				<cfreturn "float">
-			</cfcase>
-			<cfcase value="CF_SQL_INTEGER,CF_SQL_BIGINT,CF_SQL_SMALLINT,CF_SQL_TINYINT" delimiters=",">
-				<cfreturn "integer">
-			</cfcase>
-			<cfcase value="CF_SQL_BINARY,CF_SQL_VARBINARY,CF_SQL_LONGVARBINARY,CF_SQL_BLOB,CF_SQL_CLOB" delimiters=",">
-				<cfreturn "binary">
-			</cfcase>
-			<cfcase value="CF_SQL_DATE,CF_SQL_TIME,CF_SQL_TIMESTAMP" delimiters=",">
-				<cfreturn "datetime">
-			</cfcase>
-			<cfcase value="CF_SQL_BIT" delimiters=",">
-				<cfreturn "boolean">
-			</cfcase>
-			<cfcase value="CF_SQL_ARRAY" delimiters=",">
-				<cfreturn "array">
-			</cfcase>
-			<cfcase value="CF_SQL_STRUCT" delimiters=",">
-				<cfreturn "struct">
-			</cfcase>
-			<cfdefaultcase>
-				<cfreturn "string">
-			</cfdefaultcase>
-		</cfswitch>
-	</cffunction>
-
-	<cffunction name="$cleanInStatmentValue" returntype="string" access="public" output="false">
-		<cfargument name="statement" type="string" required="true">
-		<cfscript>
-		var loc = {};
-		loc.delim = ",";
-		if (Find("'", arguments.statement))
-		{
-			loc.delim = "','";
-			arguments.statement = RemoveChars(arguments.statement, 1, 1);
-			arguments.statement = reverse(RemoveChars(reverse(arguments.statement), 1, 1));
-			arguments.statement = Replace(arguments.statement, "''", "'", "all");
-		}
-		arguments.statement = ReplaceNoCase(arguments.statement, loc.delim, chr(7), "all");
-		</cfscript>
-		<cfreturn arguments.statement>
-	</cffunction>
-
-	<cffunction name="$CFQueryParameters" returntype="struct" access="public" output="false">
-		<cfargument name="settings" type="struct" required="true">
-		<cfscript>
-		var loc = {};
-		
-		if(!StructKeyExists(arguments.settings, "value"))
-		{
-			$throw(type="Wheels.QueryParamValue", message="The value for cfqueryparam cannot be determined", extendedInfo="This is usually caused by a syantax error in the WHERE statement such as forgetting to quote strings.");
-		}
-		
-		loc.params = {};
-		loc.params.cfsqltype = arguments.settings.type;
-		loc.params.value = arguments.settings.value;
-		if (StructKeyExists(arguments.settings, "null"))
-		{
-			loc.params.null = arguments.settings.null;
-		}
-		if (StructKeyExists(arguments.settings, "scale") AND arguments.settings.scale GT 0)
-		{
-			loc.params.scale = arguments.settings.scale;
-		}
-		if (StructKeyExists(arguments.settings, "list") AND arguments.settings.list)
-		{
-			loc.params.list = arguments.settings.list;
-			loc.params.separator = chr(7);
-			loc.params.value = $cleanInStatmentValue(loc.params.value);
-		}
-		if (!IsBinary(loc.params.value) && loc.params.value eq "null")
-		{
-			loc.params.useNull = true;
-		}
-		</cfscript>
-		<cfreturn loc.params>
-	</cffunction>
-
-	<cffunction name="$performQuery" returntype="struct" access="public" output="false">
-		<cfargument name="sql" type="array" required="true">
-		<cfargument name="parameterize" type="boolean" required="true">
-		<cfargument name="limit" type="numeric" required="false" default="0">
-		<cfargument name="offset" type="numeric" required="false" default="0">
-		<cfargument name="connection" type="struct" required="false" default="#variables.instance.connection#">
-		<cfargument name="$primaryKey" type="string" required="false" default="">
-		<cfscript>
-		var loc = {};
+	/**
+	 * Called after a query has executed.
+	 * If the query was an INSERT and the generated auto-incrementing primary key is not in the result we get it manually.
+	 * If the primary key was part of the INSERT (i.e. it wasn't auto-incrementing) we don't need to check it though.
+	 * This process is typically needed on non-supported databases (example: H2) and drivers (example: jTDS).
+	 * We return void or a struct containing the key name / value.
+	 */
+	public any function $identitySelect(
+	  required struct queryAttributes,
+	  required struct result,
+	  required string primaryKey
+	) {
 		var query = {};
-
-		loc.returnValue = {};
-		loc.args = duplicate(arguments.connection);
-		loc.args.result = "loc.result";
-		loc.args.name = "query.name";
-		if (StructKeyExists(loc.args, "username") && !Len(loc.args.username))
-		{
-			StructDelete(loc.args, "username", false);
-		}
-		if (StructKeyExists(loc.args, "password") && !Len(loc.args.password))
-		{
-			StructDelete(loc.args, "password", false);
-		}
-		// set queries in Railo to not preserve single quotes on the entire
-		// cfquery block (we'll handle this individually in the SQL statement instead)
-		if (application.wheels.serverName == "Railo")
-			loc.args.psq = false;
-
-		// overloaded arguments are settings for the query
-		loc.orgArgs = duplicate(arguments);
-		StructDelete(loc.orgArgs, "sql", false);
-		StructDelete(loc.orgArgs, "parameterize", false);
-		StructDelete(loc.orgArgs, "limit", false);
-		StructDelete(loc.orgArgs, "offset", false);
-		StructDelete(loc.orgArgs, "$primaryKey", false);
-		StructAppend(loc.args, loc.orgArgs, true);
-		</cfscript>
-
-		<cfquery attributeCollection="#loc.args#"><cfloop array="#arguments.sql#" index="loc.i"><cfif IsStruct(loc.i)><cfset loc.queryParamAttributes = $CFQueryParameters(loc.i)><cfif StructKeyExists(loc.queryParamAttributes, "useNull")>NULL<cfelseif StructKeyExists(loc.queryParamAttributes, "list")><cfif arguments.parameterize>(<cfqueryparam attributeCollection="#loc.queryParamAttributes#">)<cfelse>(#PreserveSingleQuotes(loc.i.value)#)</cfif><cfelse><cfif arguments.parameterize><cfqueryparam attributeCollection="#loc.queryParamAttributes#"><cfelse>#$quoteValue(str=loc.i.value, sqlType=loc.i.type)#</cfif></cfif><cfelse><cfset loc.i = Replace(PreserveSingleQuotes(loc.i), "[[comma]]", ",", "all")>#PreserveSingleQuotes(loc.i)#</cfif>#chr(13)##chr(10)#</cfloop><cfif arguments.limit>LIMIT #arguments.limit#<cfif arguments.offset>#chr(13)##chr(10)#OFFSET #arguments.offset#</cfif></cfif></cfquery>
-
-		<cfscript>
-		if (StructKeyExists(query, "name"))
-			loc.returnValue.query = query.name;
-
-		// get/set the primary key value if necessary
-		// will be done on insert statement involving auto-incremented primary keys when Railo/ACF cannot retrieve it for us
-		// this happens on non-supported databases (example: H2) and drivers (example: jTDS)
-		loc.$id = $identitySelect(queryAttributes=loc.args, result=loc.result, primaryKey=arguments.$primaryKey);
-		if (StructKeyExists(loc, "$id"))
-			StructAppend(loc.result, loc.$id);
-
-		loc.returnValue.result = loc.result;
-		</cfscript>
-		<cfreturn loc.returnValue>
-	</cffunction>
-
-	<cffunction name="$getColumnInfo" returntype="query" access="public" output="false">
-		<cfargument name="table" type="string" required="true">
-		<cfargument name="datasource" type="string" required="true">
-		<cfargument name="username" type="string" required="true">
-		<cfargument name="password" type="string" required="true">
-		<cfset arguments.type = "columns">
-		<cfreturn $dbinfo(argumentCollection=arguments)>
-	</cffunction>
-
-	<cffunction name="$quoteValue" returntype="string" access="public" output="false">
-		<cfargument name="str" type="string" required="true" hint="string to quote">
-		<cfargument name="sqlType" type="string" default="CF_SQL_VARCHAR" hint="sql column type for data">
-		<cfargument name="type" type="string" required="false" hint="validation type for data">
-		<cfscript>
-		if (NOT StructKeyExists(arguments, "type"))
-			arguments.type = $getValidationType(arguments.sqlType);
-		if (NOT ListFindNoCase("integer,float,boolean", arguments.type) OR arguments.str EQ "")
-			arguments.str = "'#arguments.str#'";
-		return arguments.str;
-		</cfscript>
-	</cffunction>
-
-	<cffunction name="$convertMaxRowsToLimit" returntype="struct" access="public" output="false">
-		<cfargument name="argScope" type="struct" required="true">
-		<cfscript>
-		if (StructKeyExists(arguments.argScope, "maxrows") AND arguments.argScope.maxrows gt 0){
-			if (arguments.argScope.maxrows gt 0){
-				arguments.argScope.limit = arguments.argScope.maxrows;
+		local.sql = Trim(arguments.result.sql);
+		if (Left(local.sql, 11) == "INSERT INTO" && !StructKeyExists(arguments.result, $generatedKey())) {
+			local.startPar = Find("(", local.sql) + 1;
+			local.endPar = Find(")", local.sql);
+			local.columnList = ReplaceList(Mid(local.sql, local.startPar, (local.endPar-local.startPar)), "#Chr(10)#,#Chr(13)#, ", ",,");
+			if (!ListFindNoCase(local.columnList, ListFirst(arguments.primaryKey))) {
+				local.rv = {};
+				query = $query(sql="SELECT LAST_INSERT_ID() AS lastId", argumentCollection=arguments.queryAttributes);
+				local.rv[$generatedKey()] = query.lastId;
+				return local.rv;
 			}
-			StructDelete(arguments.argScope, "maxrows");
 		}
-		return arguments.argScope;
-		</cfscript>
-	</cffunction>
+	}
 
-</cfcomponent>
+	/**
+	 * Set a default for the string to use to order records randomly.
+	 * Individual database adapters will override when necessary.
+	 */
+	public string function $randomOrder() {
+		return "RAND()";
+	}
+
+	/**
+	 * Set a default for the string to use when inserting a record with default values only.
+	 * Individual database adapters will override when necessary.
+	 */
+	public string function $defaultValues() {
+		return " DEFAULT VALUES";
+	}
+
+	/**
+	 * Set a default for the table alias string (e.g. "users AS users2").
+	 * Individual database adapters will override when necessary.
+	 */
+	public string function $tableAlias(required string table, required string alias) {
+		return arguments.table & " AS " & arguments.alias;
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public string function $tableName(required string list, required string action) {
+		local.rv = "";
+		local.iEnd = ListLen(arguments.list);
+		for (local.i = 1; local.i <= local.iEnd; local.i++) {
+			local.item = ListGetAt(arguments.list, local.i);
+
+			// Remove table name if specified.
+			if (arguments.action == "remove") {
+				local.item = ListRest(local.item, ".");
+			}
+
+			local.rv = ListAppend(local.rv, local.item);
+		}
+		return local.rv;
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public string function $columnAlias(required string list, required string action) {
+		local.rv = "";
+		local.iEnd = ListLen(arguments.list);
+		for (local.i = 1; local.i <= local.iEnd; local.i++) {
+			local.item = ListGetAt(arguments.list, local.i);
+			if (Find(" AS ", local.item)) {
+				local.sort = "";
+				if (Right(local.item, 4) == " ASC" || Right(local.item, 5) == " DESC") {
+					local.sort = " " & Reverse(SpanExcluding(Reverse(local.item), " "));
+					local.item = Mid(local.item, 1, Len(local.item)-Len(local.sort));
+				}
+				local.alias = Reverse(SpanExcluding(Reverse(local.item), " "));
+
+				// Keep or remove the alias.
+				if (arguments.action == "keep") {
+					local.item = local.alias;
+				} else if (arguments.action == "remove") {
+					local.item = Replace(local.item, " AS " & local.alias, "");
+				}
+
+				local.item &= local.sort;
+			}
+			local.rv = ListAppend(local.rv, local.item);
+		}
+		return local.rv;
+	}
+
+	/**
+	 * Remove the column aliases from the order by clause (this is passed in so that we can handle sub queries with calculated properties).
+	 * The args argument is the original arguments passed in by reference so we just modify it without passing it back.
+	 */
+	public void function $removeColumnAliasesInOrderClause(required struct args) {
+		if (IsSimpleValue(arguments.args.sql[ArrayLen(arguments.args.sql)]) && Left(arguments.args.sql[ArrayLen(arguments.args.sql)], 9) == "ORDER BY ") {
+			local.pos = ArrayLen(arguments.args.sql);
+			local.list = ReplaceNoCase(arguments.args.sql[local.pos], "ORDER BY ", "");
+			arguments.args.sql[local.pos] = "ORDER BY " & $columnAlias(list=local.list, action="remove");
+		}
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public boolean function $isAggregateFunction(required string sql) {
+
+		// Find "(FUNCTION(..." pattern inside the sql.
+		local.match = REFind("^\([A-Z]+\(", arguments.sql, 0, true);
+
+		// Guard against invalid match.
+		if (ArrayLen(local.match.pos) == 0) {
+			local.rv = false;
+		} else if (local.match.len[1] <= 2) {
+			local.rv = false;
+		} else {
+
+			// Extract and analyze the function name.
+			local.name = Mid(arguments.sql, local.match.pos[1]+1, local.match.len[1]-2);
+			local.rv = ListContains("AVG,COUNT,MAX,MIN,SUM", local.name) ? true : false;
+
+		}
+		return local.rv;
+	}
+
+	/**
+	 * The args argument is the original arguments passed in by reference so we just modify it without passing it back.
+	 */
+	public void function $addColumnsToSelectAndGroupBy(required struct args) {
+		if (IsSimpleValue(arguments.args.sql[ArrayLen(arguments.args.sql)]) && Left(arguments.args.sql[ArrayLen(arguments.args.sql)], 8) == "ORDER BY" && IsSimpleValue(arguments.args.sql[ArrayLen(arguments.args.sql)-1]) && Left(arguments.args.sql[ArrayLen(arguments.args.sql)-1], 8) == "GROUP BY") {
+			local.iEnd = ListLen(arguments.args.sql[ArrayLen(arguments.args.sql)]);
+			for (local.i = 1; local.i <= local.iEnd; local.i++) {
+				local.item = Trim(ReplaceNoCase(ReplaceNoCase(ReplaceNoCase(ListGetAt(arguments.args.sql[ArrayLen(arguments.args.sql)], local.i), "ORDER BY ", ""), " ASC", ""), " DESC", ""));
+				if (!ListFindNoCase(ReplaceNoCase(arguments.args.sql[ArrayLen(arguments.args.sql)-1], "GROUP BY ", ""), local.item) && !$isAggregateFunction(local.item)) {
+					local.key = ArrayLen(arguments.args.sql)-1;
+					arguments.args.sql[local.key] = ListAppend(arguments.args.sql[local.key], local.item);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Retrieves all the column information from a table.
+	 */
+	public query function $getColumns(required string tableName) {
+		local.args = {};
+		local.args.dataSource = variables.dataSource;
+		local.args.username = variables.username;
+		local.args.password = variables.password;
+		local.args.table = arguments.tableName;
+		if ($get("showErrorInformation")) {
+			try {
+				local.rv = $getColumnInfo(argumentCollection=local.args);
+			} catch (any e) {
+				Throw(
+					type="Wheels.TableNotFound",
+					message="The `#arguments.tableName#` table could not be found in the database.<br>`#e.message#`<br>`#e.detail#.`",
+					extendedInfo="Add a table named `#arguments.tableName#` to your database or tell CFWheels to use a different table for this model. For example you can tell a `user` model to use a table called `tbl_users` by creating a `User.cfc` file in the `models` folder, creating a `config` method inside it and then calling `table(""tbl_users"")` from within it. You can also issue a reload request, if you have made changes to your files, to make CFWheels pick up on those changes."
+				);
+			}
+		} else {
+			local.rv = $getColumnInfo(argumentCollection=local.args);
+		}
+		return local.rv;
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public string function $getValidationType(required string type) {
+		switch(arguments.type) {
+			case "CF_SQL_DECIMAL": case "CF_SQL_DOUBLE": case "CF_SQL_FLOAT": case "CF_SQL_MONEY": case "CF_SQL_MONEY4": case "CF_SQL_NUMERIC": case "CF_SQL_REAL":
+				return "float";
+			case "CF_SQL_INTEGER": case "CF_SQL_BIGINT": case "CF_SQL_SMALLINT": case "CF_SQL_TINYINT":
+				return "integer";
+			case "CF_SQL_BINARY": case "CF_SQL_VARBINARY": case "CF_SQL_LONGVARBINARY": case "CF_SQL_BLOB": case "CF_SQL_CLOB":
+				return "binary";
+			case "CF_SQL_DATE": case "CF_SQL_TIME": case "CF_SQL_TIMESTAMP":
+				return "datetime";
+			case "CF_SQL_BIT":
+				return "boolean";
+			case "CF_SQL_ARRAY":
+				return "array";
+			case "CF_SQL_STRUCT":
+				return "struct";
+			case "CF_SQL_LONGVARCHAR": case "CF_SQL_LONGNVARCHAR":
+				return "text";
+			default:
+				return "string";
+		}
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public string function $cleanInStatementValue(required string statement) {
+		local.rv = arguments.statement;
+		local.delim = ",";
+		if (Find("'", local.rv)) {
+			local.delim = "','";
+			local.rv = RemoveChars(local.rv, 1, 1);
+			local.rv = Reverse(RemoveChars(Reverse(local.rv), 1, 1));
+			local.rv = Replace(local.rv, "''", "'", "all");
+		}
+		return ReplaceNoCase(local.rv, local.delim, Chr(7), "all");
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public struct function $queryParams(required struct settings) {
+		if (!StructKeyExists(arguments.settings, "value")) {
+			Throw(
+				type="Wheels.QueryParamValue",
+				message="The value for `cfqueryparam` cannot be determined",
+				extendedInfo="This is usually caused by a syntax error in the `WHERE` statement, such as forgetting to quote strings for example."
+			);
+		}
+		local.rv = {};
+		local.rv.cfsqltype = arguments.settings.type;
+		local.rv.value = arguments.settings.value;
+		if (StructKeyExists(arguments.settings, "null")) {
+			local.rv.null = arguments.settings.null;
+		}
+		if (StructKeyExists(arguments.settings, "scale") && arguments.settings.scale > 0) {
+			local.rv.scale = arguments.settings.scale;
+		}
+		if (StructKeyExists(arguments.settings, "list") && arguments.settings.list) {
+			local.rv.list = arguments.settings.list;
+			local.rv.separator = Chr(7);
+			local.rv.value = $cleanInStatementValue(local.rv.value);
+		}
+		return local.rv;
+	}
+
+	/**
+	 * Get information about the table using cfdbinfo.
+	 * Individual database adapters will override when necessary.
+	 */
+	public query function $getColumnInfo(
+		required string table,
+		required string datasource,
+		required string username,
+		required string password
+	) {
+		arguments.type = "columns";
+		return $dbinfo(argumentCollection=arguments);
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public string function $quoteValue(required string str, string sqlType="CF_SQL_VARCHAR", string type) {
+		if (!StructKeyExists(arguments, "type")) {
+			arguments.type = $getValidationType(arguments.sqlType);
+		}
+		if (!ListFindNoCase("integer,float,boolean", arguments.type) || !Len(arguments.str)) {
+			local.rv = "'#arguments.str#'";
+		} else {
+			local.rv = arguments.str;
+		}
+		return local.rv;
+	}
+
+	/**
+	 * Remove the maxRows argument and add a limit argument instead.
+	 * The args argument is the original arguments passed in by reference so we just modify it without passing it back.
+	 */
+	public void function $convertMaxRowsToLimit(required struct args) {
+		if (StructKeyExists(arguments.args, "maxRows") && arguments.args.maxRows > 0) {
+			arguments.args.limit = arguments.args.maxRows;
+			StructDelete(arguments.args, "maxRows");
+		}
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public string function $comment(required string text) {
+		return "/* " & arguments.text & " */";
+	}
+
+	/**
+	 * Check if SQL contains a GROUP BY clause and an aggregate function in the WHERE clause.
+	 * If so, move the SQL to a new HAVING clause instead (after GROUP BY).
+	 * The args argument is the original arguments passed in by reference so we just modify it without passing it back.
+	 */
+	public void function $moveAggregateToHaving(required struct args) {
+		local.hasAggregate = false;
+		local.hasGroupBy = false;
+		local.havingPos = 0;
+		local.iEnd = ArrayLen(arguments.args.sql);
+		for (local.i=1; local.i <= local.iEnd; local.i++) {
+			if (IsSimpleValue(arguments.args.sql[local.i]) && Left(arguments.args.sql[local.i], 8) == "GROUP BY") {
+				local.hasGroupBy = true;
+				local.havingPos = local.i + 1;
+			}
+			if (IsSimpleValue(arguments.args.sql[local.i]) && $isAggregateFunction(arguments.args.sql[local.i])) {
+				local.hasAggregate = true;
+			}
+		}
+		if (local.hasGroupBy && local.hasAggregate) {
+			ArrayAppend(arguments.args.sql, "");
+			ArrayInsertAt(arguments.args.sql, local.havingPos, "HAVING");
+			local.sql = [];
+			local.iEnd = ArrayLen(arguments.args.sql);
+			for (local.i=1; local.i <= local.iEnd; local.i++) {
+				if (IsSimpleValue(arguments.args.sql[local.i])) {
+					if ($isAggregateFunction(arguments.args.sql[local.i])) {
+						ArrayDeleteAt(local.sql, ArrayLen(local.sql));
+						local.i++;
+						local.havingPos = local.havingPos - 3;
+					} else {
+						ArrayAppend(local.sql, arguments.args.sql[local.i]);
+					}
+				} else {
+					ArrayAppend(local.sql, arguments.args.sql[local.i]);
+				}
+			}
+			local.pos = local.havingPos;
+			local.iEnd = ArrayLen(arguments.args.sql);
+			for (local.i=1; local.i <= local.iEnd; local.i++) {
+				if (IsSimpleValue(arguments.args.sql[local.i]) && $isAggregateFunction(arguments.args.sql[local.i])) {
+					if (local.pos != local.havingPos) {
+						local.pos++;
+						ArrayInsertAt(local.sql, local.pos, arguments.args.sql[local.i-1]);
+					}
+					local.pos++;
+					ArrayInsertAt(local.sql, local.pos, arguments.args.sql[local.i]);
+					local.pos++;
+					ArrayInsertAt(local.sql, local.pos, arguments.args.sql[local.i+1]);
+				}
+			}
+			arguments.args.sql = local.sql;
+		}
+	}
+
+	/**
+	 * Internal function.
+	 */
+	public struct function $performQuery(
+	  required array sql,
+	  required boolean parameterize,
+	  numeric limit=0,
+	  numeric offset=0,
+	  string $primaryKey="",
+	  string $debugName="query"
+	) {
+		local.queryAttributes = {};
+		local.queryAttributes.dataSource = variables.dataSource;
+		local.queryAttributes.username = variables.username;
+		local.queryAttributes.password = variables.password;
+		local.queryAttributes.result = "local.$wheels.result";
+		local.queryAttributes.name = "local." & arguments.$debugName;
+		if (StructKeyExists(local.queryAttributes, "username") && !Len(local.queryAttributes.username)) {
+			StructDelete(local.queryAttributes, "username");
+		}
+		if (StructKeyExists(local.queryAttributes, "password") && !Len(local.queryAttributes.password)) {
+			StructDelete(local.queryAttributes, "password");
+		}
+
+		// Set queries in Lucee to not preserve single quotes on the entire cfquery block (we'll handle this individually in the SQL statement instead).
+		if ($get("serverName") == "Lucee") {
+			local.queryAttributes.psq = false;
+		}
+
+		// Add a key as a comment for cached queries to ensure query is unique for the life of this application.
+		local.comment = "";
+		if (StructKeyExists(arguments, "cachedwithin")) {
+			local.comment = $comment("cachekey:#$get("cacheKey")#");
+		}
+
+		// Overloaded arguments are settings for the query.
+		local.orgArgs = Duplicate(arguments);
+		StructDelete(local.orgArgs, "sql");
+		StructDelete(local.orgArgs, "parameterize");
+		StructDelete(local.orgArgs, "$debugName");
+		StructDelete(local.orgArgs, "limit");
+		StructDelete(local.orgArgs, "offset");
+		StructDelete(local.orgArgs, "$primaryKey");
+		StructAppend(local.queryAttributes, local.orgArgs);
+		return $executeQuery(
+			queryAttributes=local.queryAttributes,
+			sql=arguments.sql,
+			parameterize=arguments.parameterize,
+			limit=arguments.limit,
+			offset=arguments.offset,
+			comment=local.comment,
+			debugName=arguments.$debugName,
+			primaryKey=arguments.$primaryKey
+		);
+	}
+
+	include "../../plugins/standalone/injection.cfm";
+}

@@ -1,10 +1,13 @@
+
 <!---
 	If you leave these settings commented out, Wheels will set the data source name to the same name as the folder the application resides in.
 	<cfset set(dataSourceName="")>
 	<cfset set(dataSourceUserName="")>
 	<cfset set(dataSourcePassword="")>
 --->
-<cfset set(dataSourceName="myblog")>
+<cfscript>
+	set(dataSourceName="myblog");
+</cfscript>
 <!--- <cfset set(urlRewriting="On")> --->
 <cfset set(setUpdatedAtOnCreate=false)>
 <!---

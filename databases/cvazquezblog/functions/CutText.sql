@@ -34,5 +34,5 @@ END;
 
 $$
 
-GRANT EXECUTE ON FUNCTION cvazquezblog.CutText TO 'railo'@'localhost';
-GRANT EXECUTE ON FUNCTION cvazquezblog.CutText TO 'railo'@'127.0.0.1';
+GRANT EXECUTE ON FUNCTION cvazquezblog.CutText TO 'lucee'@'localhost';
+GRANT EXECUTE ON FUNCTION cvazquezblog.CutText TO 'lucee_i'@'localhost';

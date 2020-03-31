@@ -5,7 +5,7 @@
 --->
 <cfcomponent extends="Model">
 
-	<cffunction name="init">
+	<cffunction name="config">
 		<cfset hasMany("entrydiscussions")>
 		<cfset hasOne("entryurls")>
 		<cfset hasMany("entrycategories")>
@@ -99,12 +99,12 @@
 		<cfreturn qBlogSearch>
 
 	</cffunction>
-	
+
 	<cffunction name="GetSeriesEntries" returntype="query">
 		<cfargument name="entryId" required="true">
-		
+
 		<cfset var qSeriesPosts = "">
-	
+
 		<!--- Query any series this entry might belong to --->
 		<cfquery datasource="#get("DATASOURCENAME")#" name="qSeriesPosts">
 			SELECT e.id AS entryId, s.name, e.title, eu.titleURL
@@ -112,13 +112,13 @@
 			INNER JOIN seriesentries se2 ON se2.seriesid = se.seriesId AND se.deletedAt IS nULL
 			INNER JOIN series s ON s.id = se.seriesId AND s.deletedAt IS NULL
 			INNER JOIN entries e ON e.id = se2.entryId AND e.deletedAt IS NULL
-			INNER JOIN entryurls eu ON eu.entryId = e.id AND eu.isActive = 1 AND eu.deletedAt IS NULL	
+			INNER JOIN entryurls eu ON eu.entryId = e.id AND eu.isActive = 1 AND eu.deletedAt IS NULL
 			WHERE se.entryId = <cfqueryparam cfsqltype="cf_sql_integer" value="#arguments.entryId#"> AND se.deletedAt IS NULL
 			ORDER BY se2.sequence
 		</cfquery>
-		
+
 		<cfreturn qSeriesPosts>
-		
+
 	</cffunction>
 
 </cfcomponent>

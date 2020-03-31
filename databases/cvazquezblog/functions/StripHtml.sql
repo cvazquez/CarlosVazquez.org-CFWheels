@@ -24,4 +24,4 @@ END;
 
 $$
 
-GRANT EXECUTE ON FUNCTION cvazquezblog.StripHTML TO 'railo'@'localhost';
+GRANT EXECUTE ON FUNCTION cvazquezblog.StripHTML TO 'lucee'@'localhost';

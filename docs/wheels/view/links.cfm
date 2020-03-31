@@ -1,327 +1,433 @@
-<cffunction name="linkTo" returntype="string" access="public" output="false" hint="Creates a link to another page in your application. Pass in the name of a `route` to use your configured routes or a `controller`/`action`/`key` combination. Note: Pass any additional arguments like `class`, `rel`, and `id`, and the generated tag will also include those values as HTML attributes."
-	examples=
-	'
-		##linkTo(text="Log Out", controller="account", action="logout")##
-		-> <a href="/account/logout">Log Out</a>
+<cfscript>
 
-		<!--- if you''re already in the `account` controller, Wheels will assume that''s where you want the link to point --->
-		##linkTo(text="Log Out", action="logout")##
-		-> <a href="/account/logout">Log Out</a>
+/**
+ * Creates a link to another page in your application.
+ * Pass in the name of a route to use your configured routes or a controller/action/key combination.
+ * Note: Pass any additional arguments like class, rel, and id, and the generated tag will also include those values as HTML attributes.
+ *
+ * [section: View Helpers]
+ * [category: Link Functions]
+ *
+ * @text The text content of the link.
+ * @route Name of a route that you have configured in config/routes.cfm.
+ * @controller Name of the controller to include in the URL.
+ * @action Name of the action to include in the URL.
+ * @key Key(s) to include in the URL.
+ * @params Any additional parameters to be set in the query string (example: wheels=cool&x=y). Please note that CFWheels uses the & and = characters to split the parameters and encode them properly for you. However, if you need to pass in & or = as part of the value, then you need to encode them (and only them), example: a=cats%26dogs%3Dtrouble!&b=1.
+ * @anchor Sets an anchor name to be appended to the path.
+ * @onlyPath If true, returns only the relative URL (no protocol, host name or port).
+ * @host Set this to override the current host.
+ * @protocol Set this to override the current protocol.
+ * @port Set this to override the current port number.
+ * @href Pass a link to an external site here if you want to bypass the CFWheels routing system altogether and link to an external URL.
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function linkTo(
+	string text,
+	string route="",
+	string controller="",
+	string action="",
+	any key="",
+	string params="",
+	string anchor="",
+	boolean onlyPath,
+	string host,
+	string protocol,
+	numeric port,
+	string href,
+	any encode
+) {
+	$args(name="linkTo", args=arguments);
 
-		##linkTo(text="View Post", controller="blog", action="post", key=99)##
-		-> <a href="/blog/post/99">View Post</a>
+	// look for passed in rest method
+	if (StructKeyExists(arguments, "method")) {
 
-		##linkTo(text="View Settings", action="settings", params="show=all&sort=asc")##
-		-> <a href="/account/settings?show=all&amp;sort=asc">View Settings</a>
-
-		<!--- Given that a `userProfile` route has been configured in `config/routes.cfm` --->
-		##linkTo(text="Joe''s Profile", route="userProfile", userName="joe")##
-		-> <a href="/user/joe">Joe''s Profile</a>
-		
-		<!--- Link to an external website --->
-		##linkTo(text="ColdFusion Framework", href="http://cfwheels.org/")##
-		-> <a href="http://cfwheels.org/">ColdFusion Framework</a>
-		
-		<!--- Give the link `class` and `id` attributes --->
-		##linkTo(text="Delete Post", action="delete", key=99, class="delete", id="delete-99")##
-		-> <a class="delete" href="/blog/delete/99" id="delete-99">Delete Post</a>
-	'
-	categories="view-helper,links" chapters="linking-pages" functions="URLFor,buttonTo,mailTo">
-	<cfargument name="text" type="string" required="false" default="" hint="The text content of the link.">
-	<cfargument name="confirm" type="string" required="false" default="" hint="Pass a message here to cause a JavaScript confirmation dialog box to pop up containing the message.">
-	<cfargument name="route" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="controller" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="action" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="key" type="any" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="params" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="anchor" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="onlyPath" type="boolean" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="host" type="string" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="protocol" type="string" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="port" type="numeric" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="href" type="string" required="false" hint="Pass a link to an external site here if you want to bypass the Wheels routing system altogether and link to an external URL.">
-	<cfscript>
-		var loc = {};
-		$args(name="linkTo", args=arguments);
-		if (Len(arguments.confirm))
-		{
-			loc.onclick = "return confirm('#JSStringFormat(arguments.confirm)#');";
-			arguments.onclick = $addToJavaScriptAttribute(name="onclick", content=loc.onclick, attributes=arguments);
-		}
-		if (!StructKeyExists(arguments, "href"))
-			arguments.href = URLFor(argumentCollection=arguments);
-		arguments.href = toXHTML(arguments.href);
-		if (!Len(arguments.text))
-			arguments.text = arguments.href;
-		loc.skip = "text,confirm,route,controller,action,key,params,anchor,onlyPath,host,protocol,port";
-		if (Len(arguments.route))
-			loc.skip = ListAppend(loc.skip, $routeVariables(argumentCollection=arguments)); // variables passed in as route arguments should not be added to the html element
-		loc.returnValue = $element(name="a", skip=loc.skip, content=arguments.text, attributes=arguments);
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
-
-<cffunction name="buttonTo" returntype="string" access="public" output="false" hint="Creates a form containing a single button that submits to the URL. The URL is built the same way as the @linkTo function."
-	examples=
-	'
-		##buttonTo(text="Delete Account", action="perFormDelete", disable="Wait...")##
-	'
-	categories="view-helper,links" functions="URLFor,linkTo,mailTo">
-	<cfargument name="text" type="string" required="false" hint="The text content of the button.">
-	<cfargument name="confirm" type="string" required="false" hint="See documentation for @linkTo.">
-	<cfargument name="image" type="string" required="false" hint="If you want to use an image for the button pass in the link to it here (relative from the `images` folder).">
-	<cfargument name="disable" type="any" required="false" hint="Pass in `true` if you want the button to be disabled when clicked (can help prevent multiple clicks), or pass in a string if you want the button disabled and the text on the button updated (to ""please wait..."", for example).">
-	<cfargument name="route" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="controller" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="action" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="key" type="any" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="params" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="anchor" type="string" required="false" default="" hint="See documentation for @URLFor.">
-	<cfargument name="onlyPath" type="boolean" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="host" type="string" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="protocol" type="string" required="false" hint="See documentation for @URLFor.">
-	<cfargument name="port" type="numeric" required="false" hint="See documentation for @URLFor.">
-	<cfscript>
-		var loc = {};
-		$args(name="buttonTo", reserved="method", args=arguments);
-		arguments.action = URLFor(argumentCollection=arguments);
-		arguments.action = toXHTML(arguments.action);
-		arguments.method = "post";
-		if (Len(arguments.confirm))
-		{
-			loc.onsubmit = "return confirm('#JSStringFormat(arguments.confirm)#');";
-			arguments.onsubmit = $addToJavaScriptAttribute(name="onsubmit", content=loc.onsubmit, attributes=arguments);
-		}
-		loc.content = submitTag(value=arguments.text, image=arguments.image, disable=arguments.disable);
-		loc.skip = "disable,image,text,confirm,route,controller,key,params,anchor,onlyPath,host,protocol,port";
-		if (Len(arguments.route))
-			loc.skip = ListAppend(loc.skip, $routeVariables(argumentCollection=arguments)); // variables passed in as route arguments should not be added to the html element
-		loc.returnValue = $element(name="form", skip=loc.skip, content=loc.content, attributes=arguments);
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
-
-<cffunction name="mailTo" returntype="string" access="public" output="false" hint="Creates a `mailto` link tag to the specified email address, which is also used as the name of the link unless name is specified."
-	examples=
-	'
-		##mailTo(emailAddress="webmaster@yourdomain.com", name="Contact our Webmaster")##
-		-> <a href="mailto:webmaster@yourdomain.com">Contact our Webmaster</a>
-	'
-	categories="view-helper,links" functions="URLFor,linkTo,buttonTo">
-	<cfargument name="emailAddress" type="string" required="true" hint="The email address to link to.">
-	<cfargument name="name" type="string" required="false" default="" hint='A string to use as the link text ("Joe" or "Support Department", for example).'>
-	<cfargument name="encode" type="boolean" required="false" hint="Pass `true` here to encode the email address, making it harder for bots to harvest it for example.">
-	<cfscript>
-		var loc = {};
-		$args(name="mailTo", reserved="href", args=arguments);
-		arguments.href = "mailto:#arguments.emailAddress#";
-		if (Len(arguments.name))
-			loc.content = arguments.name;
-		else
-			loc.content = arguments.emailAddress;
-		loc.returnValue = $element(name="a", skip="emailAddress,name,encode", content=loc.content, attributes=arguments);
-		if (arguments.encode)
-		{
-			loc.js = "document.write('#Trim(loc.returnValue)#');";
-			loc.encoded = "";
-			loc.iEnd = Len(loc.js);
-			for (loc.i=1; loc.i LTE loc.iEnd; loc.i=loc.i+1)
-			{
-				loc.encoded = loc.encoded & "%" & Right("0" & FormatBaseN(Asc(Mid(loc.js,loc.i,1)),16),2);
+		// if dealing with delete, keep robots from following link
+		if (arguments.method == "delete") {
+			if (!StructKeyExists(arguments, "rel")) {
+				arguments.rel = "";
 			}
-			loc.content = "eval(unescape('#loc.encoded#'))";
-			loc.returnValue = $element(name="script", content=loc.content, type="text/javascript");
+			arguments.rel = ListAppend(arguments.rel, "no-follow", " ");
 		}
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
+	}
 
-<cffunction name="paginationLinks" returntype="string" access="public" output="false" hint="Builds and returns a string containing links to pages based on a paginated query. Uses @linkTo internally to build the link, so you need to pass in a `route` name or a `controller`/`action`/`key` combination. All other @linkTo arguments can be supplied as well, in which case they are passed through directly to @linkTo. If you have paginated more than one query in the controller, you can use the `handle` argument to reference them. (Don't forget to pass in a `handle` to the @findAll function in your controller first.)"
-	examples=
-	'
-		<!--- Example 1: List authors page by page, 25 at a time --->
-		<!--- Controller code --->
-		<cfparam name="params.page" default="1">
-		<cfset allAuthors = model("author").findAll(page=params.page, perPage=25, order="lastName")>
+	local.encodeExcept = "";
+	if (!StructKeyExists(arguments, "href")) {
+		local.args = Duplicate(arguments);
+		local.args.$encodeForHtmlAttribute = true;
+		if (local.args.encode == "attributes") {
+			local.args.encode = true;
+		}
+		arguments.href = URLFor(argumentCollection=local.args);
+		local.encodeExcept = "href";
+	}
+	if (!StructKeyExists(arguments, "text")) {
+		arguments.text = arguments.href;
+	}
+	local.skip = "text,route,controller,action,key,params,anchor,onlyPath,host,protocol,port,encode";
+	if (Len(arguments.route)) {
+		// variables passed in as route arguments should not be added to the html element
+		local.skip = ListAppend(local.skip, $routeVariables(argumentCollection=arguments));
+	}
+	return $element(
+		name="a",
+		skip=local.skip,
+		content=arguments.text,
+		attributes=arguments,
+		encode=arguments.encode,
+		encodeExcept=local.encodeExcept
+	);
+}
 
-		<!--- View code --->
-		<ul>
-		    <cfoutput query="allAuthors">
-		        <li>##firstName## ##lastName##</li>
-		    </cfoutput>
-		</ul>
-		<cfoutput>##paginationLinks(action="listAuthors")##</cfoutput>
-		
-		<!--- Example 2: Using the same model call above, show all authors with a window size of 5 --->
-		<!--- View code --->
-		<cfoutput>##paginationLinks(action="listAuthors", windowSize=5)##</cfoutput>
+/**
+ * Creates a form containing a single button that submits to the URL.
+ * The URL is built the same way as the `linkTo` function.
+ *
+ * [section: View Helpers]
+ * [category: Link Functions]
+ *
+ * @text The text content of the button.
+ * @image If you want to use an image for the button pass in the link to it here (relative from the `images` folder).
+ * @route [see:URLFor].
+ * @controller [see:URLFor].
+ * @action [see:URLFor].
+ * @key [see:URLFor].
+ * @params [see:URLFor].
+ * @anchor [see:URLFor].
+ * @onlyPath [see:URLFor].
+ * @host [see:URLFor].
+ * @protocol [see:URLFor].
+ * @port [see:URLFor].
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function buttonTo(
+	string text,
+	string image,
+	string route="",
+	string controller="",
+	string action="",
+	any key="",
+	string params="",
+	string anchor="",
+	boolean onlyPath,
+	string host,
+	string protocol,
+	numeric port,
+	any encode
+) {
+	local.method = "post";
+	$args(name="buttonTo", args=arguments);
+	local.content = "";
+	if (StructKeyExists(arguments, "method")) {
+		if (!ListFindNoCase("post,get", arguments.method)) {
+			local.content &= hiddenFieldTag(name="_method", value=arguments.method);
+		} else if (arguments.method == "get") {
+			local.method = "get";
+		}
+	}
+	arguments.method = local.method;
+	local.args = Duplicate(arguments);
+	local.args.$encodeForHtmlAttribute = true;
+	if (local.args.encode == "attributes") {
+		local.args.encode = true;
+	}
+	arguments.action = URLFor(argumentCollection=local.args);
+	local.encodeExcept = "action";
+	local.args = $innerArgs(name="input", args=arguments);
+	local.args.value = arguments.text;
+	local.args.image = arguments.image;
+	local.args.encode = arguments.encode;
+	local.content &= submitTag(argumentCollection=local.args);
+	local.skip = "image,text,route,controller,key,params,anchor,onlyPath,host,protocol,port,encode";
+	if (Len(arguments.route)) {
+		// variables passed in as route arguments should not be added to the html element
+		local.skip = ListAppend(local.skip, $routeVariables(argumentCollection=arguments));
+	}
+	local.encode = IsBoolean(arguments.encode) && arguments.encode ? "attributes" : false;
+	if ($isRequestProtectedFromForgery() && ListFindNoCase("post,put,patch,delete", arguments.method)) {
+		local.content &= authenticityTokenField();
+	}
+	return $element(name="form", skip=local.skip, content=local.content, attributes=arguments, encode=local.encode, encodeExcept=local.encodeExcept);
+}
 
-		<!--- Example 3: If more than one paginated query is being run, then you need to reference the correct `handle` in the view --->
-		<!--- Controller code --->
-		<cfset allAuthors = model("author").findAll(handle="authQuery", page=5, order="id")>
+/**
+ * Creates a `mailto` link tag to the specified email address, which is also used as the name of the link unless name is specified.
+ *
+ * [section: View Helpers]
+ * [category: Link Functions]
+ *
+ * @emailAddress The email address to link to.
+ * @name A string to use as the link text ("Joe" or "Support Department", for example).
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function mailTo(
+	required string emailAddress,
+	string name="",
+	any encode
+) {
+	$args(name="mailTo", reserved="href", args=arguments);
+	arguments.href = "mailto:" & arguments.emailAddress;
+	local.content = Len(arguments.name) ? arguments.name : arguments.emailAddress;
+	return $element(
+		name="a",
+		skip="emailAddress,name,encode",
+		content=local.content,
+		attributes=arguments,
+		encode=arguments.encode
+	);
+}
 
-		<!--- View code --->
-		<ul>
-		    <cfoutput>##paginationLinks(action="listAuthors", handle="authQuery", prependToLink="<li>", appendToLink="</li>")##</cfoutput>
-		</ul>
+/**
+ * Builds and returns a string containing links to pages based on a paginated query.
+ * Uses `linkTo()` internally to build the link, so you need to pass in a route name or a controller/action/key combination.
+ * All other `linkTo()` arguments can be supplied as well, in which case they are passed through directly to `linkTo()`.
+ * If you have paginated more than one query in the controller, you can use the handle argument to reference them. (Don't forget to pass in a handle to the `findAll()` function in your controller first.)
+ *
+ * [section: View Helpers]
+ * [category: Link Functions]
+ *
+ * @windowSize The number of page links to show around the current page.
+ * @alwaysShowAnchors Whether or not links to the first and last page should always be displayed.
+ * @anchorDivider String to place next to the anchors on either side of the list.
+ * @linkToCurrentPage Whether or not the current page should be linked to.
+ * @prepend String or HTML to be prepended before result.
+ * @append String or HTML to be appended after result.
+ * @prependToPage String or HTML to be prepended before each page number.
+ * @prependOnFirst Whether or not to prepend the prependToPage string on the first page in the list.
+ * @prependOnAnchor Whether or not to prepend the prependToPage string on the anchors.
+ * @appendToPage String or HTML to be appended after each page number.
+ * @appendOnLast Whether or not to append the appendToPage string on the last page in the list.
+ * @appendOnAnchor Whether or not to append the appendToPage string on the anchors.
+ * @classForCurrent Class name for the current page number (if linkToCurrentPage is true, the class name will go on the a element. If not, a span element will be used).
+ * @handle The handle given to the query that the pagination links should be displayed for.
+ * @name The name of the param that holds the current page number.
+ * @showSinglePage Will show a single page when set to true. (The default behavior is to return an empty string when there is only one page in the pagination).
+ * @pageNumberAsParam Decides whether to link the page number as a param or as part of a route. (The default behavior is true).
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function paginationLinks(
+	numeric windowSize,
+	boolean alwaysShowAnchors,
+	string anchorDivider,
+	boolean linkToCurrentPage,
+	string prepend,
+	string append,
+	string prependToPage,
+	boolean prependOnFirst,
+	boolean prependOnAnchor,
+	string appendToPage,
+	boolean appendOnLast,
+	boolean appendOnAnchor,
+	string classForCurrent,
+	string handle="query",
+	string name,
+	boolean showSinglePage,
+	boolean pageNumberAsParam,
+	any encode
+) {
+	$args(name="paginationLinks", args=arguments);
+	local.skipArgs = "windowSize,alwaysShowAnchors,anchorDivider,linkToCurrentPage,prepend,append,prependToPage,prependOnFirst,prependOnAnchor,appendToPage,appendOnLast,appendOnAnchor,classForCurrent,handle,name,showSinglePage,pageNumberAsParam";
+	local.linkToArguments = Duplicate(arguments);
+	local.iEnd = ListLen(local.skipArgs);
+	for (local.i = 1; local.i <= local.iEnd; local.i++) {
+		StructDelete(local.linkToArguments, ListGetAt(local.skipArgs, local.i));
+	}
+	local.currentPage = pagination(arguments.handle).currentPage;
+	local.totalPages = pagination(arguments.handle).totalPages;
+	local.start = "";
+	local.middle = "";
+	local.end = "";
+	if (StructKeyExists(arguments, "route")) {
+		// when a route name is specified and the name argument is part
+		// of the route variables specified, we need to force the
+		// arguments.pageNumberAsParam to be false
+		local.routeConfig = $findRoute(argumentCollection=arguments);
+		if (ListFindNoCase(local.routeConfig.variables, arguments.name)) {
+			arguments.pageNumberAsParam = false;
+		}
+	}
 
-		<!--- Example 4: Call to `paginationLinks` using routes --->
-		<!--- Route setup in config/routes.cfm --->
-		<cfset addRoute(name="paginatedCommentListing", pattern="blog/[year]/[month]/[day]/[page]", controller="theBlog", action="stats")>
-		<cfset addRoute(name="commentListing", pattern="blog/[year]/[month]/[day]",  controller="theBlog", action="stats")>
+	// Encode all prepend / append type arguments if specified.
+	if (IsBoolean(arguments.encode) && arguments.encode && $get("encodeHtmlTags")) {
+		if (Len(arguments.prepend)) {
+			arguments.prepend = EncodeForHtml($canonicalize(arguments.prepend));
+		}
+		if (Len(arguments.prependToPage)) {
+			arguments.prependToPage = EncodeForHtml($canonicalize(arguments.prependToPage));
+		}
+		if (Len(arguments.append)) {
+			arguments.append = EncodeForHtml($canonicalize(arguments.append));
+		}
+		if (Len(arguments.appendToPage)) {
+			arguments.appendToPage = EncodeForHtml($canonicalize(arguments.appendToPage));
+		}
+	}
 
-		<!--- Ccontroller code --->
-		<cfparam name="params.page" default="1">
-		<cfset comments = model("comment").findAll(page=params.page, order="createdAt")>
-
-		<!--- View code --->
-		<ul>
-		    <cfoutput>##paginationLinks(route="paginatedCommentListing", year=2009, month="feb", day=10)##</cfoutput>
-		</ul>
-	'
-	categories="view-helper,links" chapters="getting-paginated-data,displaying-links-for-pagination" functions="pagination,setPagination,linkTo,findAll">
-	<cfargument name="windowSize" type="numeric" required="false" hint="The number of page links to show around the current page.">
-	<cfargument name="alwaysShowAnchors" type="boolean" required="false" hint="Whether or not links to the first and last page should always be displayed.">
-	<cfargument name="anchorDivider" type="string" required="false" hint="String to place next to the anchors on either side of the list.">
-	<cfargument name="linkToCurrentPage" type="boolean" required="false" hint="Whether or not the current page should be linked to.">
-	<cfargument name="prepend" type="string" required="false" hint="String or HTML to be prepended before result.">
-	<cfargument name="append" type="string" required="false" hint="String or HTML to be appended after result.">
-	<cfargument name="prependToPage" type="string" required="false" hint="String or HTML to be prepended before each page number.">
-	<cfargument name="prependOnFirst" type="boolean" required="false" hint="Whether or not to prepend the `prependToPage` string on the first page in the list.">
-	<cfargument name="prependOnAnchor" type="boolean" required="false" hint="Whether or not to prepend the `prependToPage` string on the anchors.">
-	<cfargument name="appendToPage" type="string" required="false" hint="String or HTML to be appended after each page number.">
-	<cfargument name="appendOnLast" type="boolean" required="false" hint="Whether or not to append the `appendToPage` string on the last page in the list.">
-	<cfargument name="appendOnAnchor" type="boolean" required="false" hint="Whether or not to append the `appendToPage` string on the anchors.">
-	<cfargument name="classForCurrent" type="string" required="false" hint="Class name for the current page number (if `linkToCurrentPage` is `true`, the class name will go on the `a` element. If not, a `span` element will be used).">
-	<cfargument name="handle" type="string" required="false" default="query" hint="The handle given to the query that the pagination links should be displayed for.">
-	<cfargument name="name" type="string" required="false" hint="The name of the param that holds the current page number.">
-	<cfargument name="showSinglePage" type="boolean" required="false" hint="Will show a single page when set to `true`. (The default behavior is to return an empty string when there is only one page in the pagination).">
-	<cfargument name="pageNumberAsParam" type="boolean" required="false" hint="Decides whether to link the page number as a param or as part of a route. (The default behavior is `true`).">
-
-	<cfscript>
-		var loc = {};
-		$args(name="paginationLinks", args=arguments);
-		loc.skipArgs = "windowSize,alwaysShowAnchors,anchorDivider,linkToCurrentPage,prepend,append,prependToPage,prependOnFirst,prependOnAnchor,appendToPage,appendOnLast,appendOnAnchor,classForCurrent,handle,name,showSinglePage,pageNumberAsParam";
-		loc.linkToArguments = Duplicate(arguments);
-		loc.iEnd = ListLen(loc.skipArgs);
-		for (loc.i=1; loc.i <= loc.iEnd; loc.i++)
-			StructDelete(loc.linkToArguments, ListGetAt(loc.skipArgs, loc.i));
-		loc.currentPage = pagination(arguments.handle).currentPage;
-		loc.totalPages = pagination(arguments.handle).totalPages;
-		loc.start = "";
-		loc.middle = "";
-		loc.end = "";
-		
-		if (StructKeyExists(arguments, "route"))
-		{
-			// when a route name is specified and the name argument is part
-			// of the route variables specified, we need to force the
-			// arguments.pageNumberAsParam to be false
-			loc.routeConfig = $findRoute(argumentCollection=arguments);
-			if (ListFindNoCase(loc.routeConfig.variables, arguments.name))
-			{
-				arguments.pageNumberAsParam = false;
+	if (arguments.showSinglePage || local.totalPages > 1) {
+		if (Len(arguments.prepend)) {
+			local.start &= arguments.prepend;
+		}
+		if (arguments.alwaysShowAnchors) {
+			if ((local.currentPage - arguments.windowSize) > 1) {
+				local.pageNumber = 1;
+				if (!arguments.pageNumberAsParam) {
+					local.linkToArguments[arguments.name] = local.pageNumber;
+				} else {
+					local.linkToArguments.params = arguments.name & "=" & local.pageNumber;
+					if (StructKeyExists(arguments, "params")) {
+						local.linkToArguments.params &= "&" & arguments.params;
+					}
+				}
+				local.linkToArguments.text = NumberFormat(local.pageNumber);
+				if (Len(arguments.prependToPage) && arguments.prependOnAnchor) {
+					local.start &= arguments.prependToPage;
+				}
+				local.start &= linkTo(argumentCollection=local.linkToArguments);
+				if (Len(arguments.appendToPage) && arguments.appendOnAnchor) {
+					local.start &= arguments.appendToPage;
+				}
+				local.start &= arguments.anchorDivider;
 			}
 		}
-		if (arguments.showSinglePage || loc.totalPages > 1)
-		{
-			if (Len(arguments.prepend))
-				loc.start = loc.start & arguments.prepend;
-			if (arguments.alwaysShowAnchors)
-			{
-				if ((loc.currentPage - arguments.windowSize) > 1)
-				{
-					loc.pageNumber = 1;
-					if (!arguments.pageNumberAsParam)
-					{
-						loc.linkToArguments[arguments.name] = loc.pageNumber;
+		local.middle = "";
+		for (local.i = 1; local.i <= local.totalPages; local.i++) {
+			if ((local.i >= (local.currentPage - arguments.windowSize) && local.i <= local.currentPage) || (local.i <= (local.currentPage + arguments.windowSize) && local.i >= local.currentPage)) {
+				if (!arguments.pageNumberAsParam) {
+					local.linkToArguments[arguments.name] = local.i;
+				} else {
+					local.linkToArguments.params = arguments.name & "=" & local.i;
+					if (StructKeyExists(arguments, "params")) {
+						local.linkToArguments.params &= "&" & arguments.params;
 					}
-					else
-					{
-						loc.linkToArguments.params = arguments.name & "=" & loc.pageNumber;
-						if (StructKeyExists(arguments, "params"))
-							loc.linkToArguments.params = loc.linkToArguments.params & "&" & arguments.params;
+				}
+				local.linkToArguments.text = NumberFormat(local.i);
+				if (Len(arguments.classForCurrent) && local.currentPage == local.i) {
+					// apply the classForCurrent class if specified and this is the current page
+					local.linkToArguments.class = arguments.classForCurrent;
+				} else if (StructKeyExists(arguments, "class") && Len(arguments.class)) {
+					// allow the class attribute to be applied to the anchor tag if specified
+					local.linkToArguments.class = arguments.class;
+				} else {
+					// clear the class argument if not provided
+					StructDelete(local.linkToArguments, "class");
+				}
+				if (Len(arguments.prependToPage)) {
+					local.middle &= arguments.prependToPage;
+				}
+				if (local.currentPage != local.i || arguments.linkToCurrentPage) {
+					local.middle &= linkTo(argumentCollection=local.linkToArguments);
+				} else {
+					if (Len(arguments.classForCurrent)) {
+						local.middle &= $element(name="span", content=NumberFormat(local.i), class=arguments.classForCurrent, encode=arguments.encode);
+					} else {
+						local.middle &= NumberFormat(local.i);
 					}
-					loc.linkToArguments.text = loc.pageNumber;
-					if (Len(arguments.prependToPage) && arguments.prependOnAnchor)
-						loc.start = loc.start & arguments.prependToPage;
-					loc.start = loc.start & linkTo(argumentCollection=loc.linkToArguments);
-					if (Len(arguments.appendToPage) && arguments.appendOnAnchor)
-						loc.start = loc.start & arguments.appendToPage;
-					loc.start = loc.start & arguments.anchorDivider;
+				}
+				if (Len(arguments.appendToPage)) {
+					local.middle &= arguments.appendToPage;
 				}
 			}
-			loc.middle = "";
-			for (loc.i=1; loc.i <= loc.totalPages; loc.i++)
-			{
-				if ((loc.i >= (loc.currentPage - arguments.windowSize) && loc.i <= loc.currentPage) || (loc.i <= (loc.currentPage + arguments.windowSize) && loc.i >= loc.currentPage))
-				{
-					if (!arguments.pageNumberAsParam)
-					{
-						loc.linkToArguments[arguments.name] = loc.i;
+		}
+		if (arguments.alwaysShowAnchors) {
+			if (local.totalPages > (local.currentPage + arguments.windowSize)) {
+				if (!arguments.pageNumberAsParam) {
+					local.linkToArguments[arguments.name] = local.totalPages;
+				} else {
+					local.linkToArguments.params = arguments.name & "=" & local.totalPages;
+					if (StructKeyExists(arguments, "params")) {
+						local.linkToArguments.params &= "&" & arguments.params;
 					}
-					else
-					{
-						loc.linkToArguments.params = arguments.name & "=" & loc.i;
-						if (StructKeyExists(arguments, "params"))
-							loc.linkToArguments.params = loc.linkToArguments.params & "&" & arguments.params;
-					}
-					loc.linkToArguments.text = loc.i;
-					if (Len(arguments.classForCurrent) && loc.currentPage == loc.i)
-						loc.linkToArguments.class = arguments.classForCurrent;
-					else
-						StructDelete(loc.linkToArguments, "class");
-					if (Len(arguments.prependToPage))
-						loc.middle = loc.middle & arguments.prependToPage;
-					if (loc.currentPage != loc.i || arguments.linkToCurrentPage)
-					{
-						loc.middle = loc.middle & linkTo(argumentCollection=loc.linkToArguments);
-					}
-					else
-					{
-						if (Len(arguments.classForCurrent))
-							loc.middle = loc.middle & $element(name="span", content=loc.i, class=arguments.classForCurrent);
-						else
-							loc.middle = loc.middle & loc.i;
-					}
-					if (Len(arguments.appendToPage))
-						loc.middle = loc.middle & arguments.appendToPage;
+				}
+				local.linkToArguments.text = NumberFormat(local.totalPages);
+				local.end &= arguments.anchorDivider;
+				if (Len(arguments.prependToPage) && arguments.prependOnAnchor) {
+					local.end &= arguments.prependToPage;
+				}
+				local.end &= linkTo(argumentCollection=local.linkToArguments);
+				if (Len(arguments.appendToPage) && arguments.appendOnAnchor) {
+					local.end &= arguments.appendToPage;
 				}
 			}
-			if (arguments.alwaysShowAnchors)
-			{
-				if (loc.totalPages > (loc.currentPage + arguments.windowSize))
-				{
-					if (!arguments.pageNumberAsParam)
-					{
-						loc.linkToArguments[arguments.name] = loc.totalPages;
-					}
-					else
-					{
-						loc.linkToArguments.params = arguments.name & "=" & loc.totalPages;
-						if (StructKeyExists(arguments, "params"))
-							loc.linkToArguments.params = loc.linkToArguments.params & "&" & arguments.params;
-					}
-					loc.linkToArguments.text = loc.totalPages;
-					loc.end = loc.end & arguments.anchorDivider;
-					if (Len(arguments.prependToPage) && arguments.prependOnAnchor)
-						loc.end = loc.end & arguments.prependToPage;
-					loc.end = loc.end & linkTo(argumentCollection=loc.linkToArguments);
-					if (Len(arguments.appendToPage) && arguments.appendOnAnchor)
-						loc.end = loc.end & arguments.appendToPage;
-				}
+		}
+		if (Len(arguments.append)) {
+			local.end &= arguments.append;
+		}
+	}
+	if (Len(local.middle)) {
+		if (Len(arguments.prependToPage) && !arguments.prependOnFirst) {
+			local.middle = Mid(local.middle, Len(arguments.prependToPage)+1, Len(local.middle)-Len(arguments.prependToPage));
+		}
+		if (Len(arguments.appendToPage) && !arguments.appendOnLast) {
+			local.middle = Mid(local.middle, 1, Len(local.middle)-Len(arguments.appendToPage));
+		}
+	}
+	return local.start & local.middle & local.end;
+}
+
+/**
+ * Turns all URLs and email addresses into links.
+ *
+ * [section: View Helpers]
+ * [category: Link Functions]
+ *
+ * @text The text to create links in.
+ * @link Whether to link URLs, email addresses or both. Possible values are: `all` (default), `URLs` and `emailAddresses`.
+ * @relative Should we auto-link relative urls.
+ * @encode [see:styleSheetLinkTag].
+ */
+public string function autoLink(required string text, string link, boolean relative=true, boolean encode) {
+	$args(name="autoLink", args=arguments);
+	local.rv = arguments.text;
+
+	// Create anchor elements with an href attribute for all URLs found in the text.
+	if (arguments.link != "emailAddresses") {
+		if (arguments.relative) {
+			arguments.regex = "(?:(?:<a\s[^>]+)?(?:https?://|www\.|\/)[^\s\b]+)";
+		} else {
+			arguments.regex = "(?:(?:<a\s[^>]+)?(?:https?://|www\.)[^\s\b]+)";
+		}
+		local.rv = $autoLinkLoop(text=local.rv, argumentCollection=arguments);
+	}
+
+	// Create anchor elements with a "mailto:" link in an href attribute for all email addresses found in the text.
+	if (arguments.link != "urls") {
+		arguments.regex = "(?:(?:<a\s[^>]+)?(?:[^@\s]+)@(?:(?:[-a-z0-9]+\.)+[a-z]{2,}))";
+		arguments.protocol = "mailto:";
+		local.rv = $autoLinkLoop(text=local.rv, argumentCollection=arguments);
+	}
+
+	return local.rv;
+}
+
+/**
+ * Called from the autoLink function.
+ */
+public string function $autoLinkLoop(required string text, required string regex, string protocol="") {
+	local.punctuationRegEx = "([^\w\/-]+)$";
+	local.startPosition = 1;
+	local.match = ReFindNoCase(arguments.regex, arguments.text, local.startPosition, true);
+	while (local.match.pos[1] > 0) {
+		local.startPosition = local.match.pos[1] + local.match.len[1];
+		local.str = Mid(arguments.text, local.match.pos[1], local.match.len[1]);
+		if (Left(local.str, 2) != "<a") {
+			arguments.text = RemoveChars(arguments.text, local.match.pos[1], local.match.len[1]);
+			local.punctuation = ArrayToList(ReMatchNoCase(local.punctuationRegEx, local.str));
+			local.str = REReplaceNoCase(local.str, local.punctuationRegEx, "", "all");
+
+			// Make sure that links beginning with "www." have a protocol.
+			if (Left(local.str, 4) == "www." && !Len(arguments.protocol)) {
+				arguments.protocol = "http://";
 			}
-			if (Len(arguments.append))
-				loc.end = loc.end & arguments.append;
+
+			arguments.href = arguments.protocol & local.str;
+			local.element = $element(name="a", content=local.str, attributes=arguments, skip="text,regex,link,protocol,relative,encode", encode=arguments.encode) & local.punctuation;
+			arguments.text = Insert(local.element, arguments.text, local.match.pos[1]-1);
+			local.startPosition = local.match.pos[1] + Len(local.element);
 		}
-		if (Len(loc.middle))
-		{
-			if (Len(arguments.prependToPage) && !arguments.prependOnFirst)
-				loc.middle = Mid(loc.middle, Len(arguments.prependToPage)+1, Len(loc.middle)-Len(arguments.prependToPage));
-			if (Len(arguments.appendToPage) && !arguments.appendOnLast)
-				loc.middle = Mid(loc.middle, 1, Len(loc.middle)-Len(arguments.appendToPage));
-		}
-		loc.returnValue = loc.start & loc.middle & loc.end;
-	</cfscript>
-	<cfreturn loc.returnValue>
-</cffunction>
+		local.startPosition++;
+		local.match = ReFindNoCase(arguments.regex, arguments.text, local.startPosition, true);
+	}
+	return arguments.text;
+}
+
+</cfscript>
