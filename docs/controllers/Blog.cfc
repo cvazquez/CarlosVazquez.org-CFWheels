@@ -56,7 +56,7 @@
 																	entries.teaser AS contentTeaser",
 																include	= "entrycategories,entryurls",
 																where	= "entrycategories.categoryId = #qCategory.id# AND entries.publishAt <= now()",
-																order	= "entries.publishAt desc")>
+																order	= "entries.publishAt DESC")>
 
 	<cfset qLatestBlogs = LatestBlogs()>
 	<cfset qLatestDiscussions = LatestDiscussions()>
@@ -99,9 +99,9 @@
 		<cfset content = qBlogEntry.content>
 		<cfset publishDate = qBlogEntry.publishAt>
 		<cfset id = qBlogEntry.id>
-		
+
 		<cfset qSeriesPosts = model("Entry").GetSeriesEntries(qBlogEntry.id)>
-		
+
 		<!--- Comments/Discussion to display at bottom of blog --->
 		<cfif qBlogEntry.discussionCount GT 0>
 			<cfset qBlogDiscussions = model("Entrydiscussion").GetEntryDiscussions(qBlogEntry.id)>
@@ -138,16 +138,16 @@
 		<!--- Javascript functions for this action --->
 		<cfset javaScriptIncludeTag(sources	= "blog/entry",
 									head	= true)>
-									
-		<!--- Code syntax highlighter http://alexgorbatchev.com/SyntaxHighlighter/manual/installation.html --->		
+
+		<!--- Code syntax highlighter http://alexgorbatchev.com/SyntaxHighlighter/manual/installation.html --->
 		<cfset javaScriptIncludeTag(sources	= "syntaxhighlighter_3.0.83/shCore",
 									head	= true)>
 		<cfset javaScriptIncludeTag(sources	= "syntaxhighlighter_3.0.83/shBrushJScript",
 									head	= true)>
-		
+
 		<cfset styleSheetLinkTag(source = "syntaxhighlighter_3.0.83/shCore", head=true)>
 		<cfset styleSheetLinkTag(source = "syntaxhighlighter_3.0.83/shThemeDefault", head=true)>
-		
+
 
 		<cfset breadCrumbArray[1] = "/blog|Home">
 		<cfif listLen(qBlogEntry.categoryURL) AND listLen(qBlogEntry.categoryName)>
