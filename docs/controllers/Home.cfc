@@ -30,8 +30,8 @@
 
 	<cfset title = "The Adventures of Carlos">
 
-	<!--- <cfheader statuscode="301" statustext="Moved permanently">
-	<cfheader name="Location" value="/blog"> --->
+	<cfheader statuscode="301" statustext="Moved permanently">
+	<cfheader name="Location" value="/blog">
 </cffunction>
 
 <cffunction name="notfound">

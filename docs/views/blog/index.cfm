@@ -13,7 +13,9 @@
 
 	<cfoutput query="qBlogRoll">
 	<div class="BlogRollEntryBorders">
-	<h2 class="BlogRollEntryHeaders"><a href="/blog/#qBlogRoll.titleURL#">#qBlogRoll.title#</a></h2>
+	<h2 class="BlogRollEntryHeaders">
+		<a href="/blog/#qBlogRoll.titleURL#">#qBlogRoll.title#</a>
+	</h2>
 	<span class="BlogRollEntryPostedDate">Posted #qBlogRoll.publishDate#</span>
 
 	<p>#StripCR(qBlogRoll.contentTeaser)#</p>
