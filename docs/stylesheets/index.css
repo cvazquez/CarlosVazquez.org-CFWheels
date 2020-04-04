@@ -1,6 +1,6 @@
 body
 {
-	font-family: verdana;  	
+	font-family: verdana;
   	background-image:url('/images/dogandcatstickfigures.jpg');
 	background-repeat:no-repeat;
 	background-position:right top;
@@ -36,17 +36,17 @@ a:link
 	color: #686a6f;
 	text-decoration:none;
 }
-a:visited 
+a:visited
 {
 	color: #686a6f;
 	text-decoration:none;
 }
-a:hover 
+a:hover
 {
 	color: #686a6f;
 	text-decoration:none;
 }
-a:active 
+a:active
 {
 	color: #686a6f;
 	text-decoration:none;
@@ -110,11 +110,11 @@ a:active
    background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#eff2f8), to(#fbfcfd));
 
    /* Safari 5.1+, Mobile Safari, Chrome 10+ */
-   background-image: -webkit-linear-gradient(top, #eff2f8, #fbfcfd); 
+   background-image: -webkit-linear-gradient(top, #eff2f8, #fbfcfd);
 
    /* Firefox 3.6+ */
    background-image: -moz-linear-gradient(top, #eff2f8, #fbfcfd);
- 
+
    /* IE 10+ */
    background-image: -ms-linear-gradient(top, #eff2f8, #fbfcfd);
 
@@ -135,8 +135,8 @@ a:active
 {
 	position: absolute;
 	text-color: #686a6f;
-	
-	top: 10px; 
+
+	top: 10px;
 	left: 0;
 	height: 40px;
 	width: 256px;
@@ -155,7 +155,7 @@ a:active
 {
 	position: relative;
 	width: 200px;
-	height: 20px;	
+	height: 20px;
 	background:url(/images/searchiconcat.gif) no-repeat 100% 50%;
 	color: silver;
 }
@@ -176,17 +176,17 @@ a:active
    background-image: -webkit-gradient(left, 0% 0%, 0% 100%, from(#6c7b9d), to(#a0acc8));
 
    /* Safari 5.1+, Mobile Safari, Chrome 10+ */
-   background-image: -webkit-linear-gradient(left, #6c7b9d, #a0acc8); 
+   background-image: -webkit-linear-gradient(left, #6c7b9d, #a0acc8);
 
    /* Firefox 3.6+ */
    background-image: -moz-linear-gradient(left, #6c7b9d, #a0acc8);
- 
+
    /* IE 10+ */
    background-image: -ms-linear-gradient(left, #6c7b9d, #a0acc8);
 
    /* Opera 11.10+ */
    background-image: -o-linear-gradient(left, #6c7b9d, #a0acc8);
-   
+
 	position: relative;
 	top: 0;
 	left: 0;
@@ -197,8 +197,8 @@ a:active
 {
 	position: absolute;
 	text-color: #FFFFFF;
-	
-	top: 10px; 
+
+	top: 10px;
 	left: 0;
 	height: 40px;
 	width: 1024px;
@@ -217,20 +217,25 @@ a:active
 	color: #FFFFFF;
 	text-decoration:none;
 }
-#HeaderMainLinksText a:visited 
+#HeaderMainLinksText a:visited
 {
 	color: #FFFFFF;
 	text-decoration:none;
 }
-#HeaderMainLinksText a:hover 
+#HeaderMainLinksText a:hover
 {
 	color: #FFFFFF;
 	text-decoration:none;
 }
-#HeaderMainLinksText a:active 
+#HeaderMainLinksText a:active
 {
 	color: #FFFFFF;
 	text-decoration:none;
+}
+
+#HeaderMainLinksText .ExternalLinks {
+	float: right;
+	margin-right: 25px;
 }
 
 #HeaderAdLinkUnit
@@ -238,10 +243,10 @@ a:active
 	clear: both;
 	border: 1px solid silver;
 	width: 982px;
-	margin-bottom: 10px; 
+	margin-bottom: 10px;
 	padding: 8px 0px 8px 40px;
 	font-size: 12px;
-	
+
 }
 
 #HeaderSlideShowContainer
@@ -284,8 +289,8 @@ a:active
 
 .BlogRollEntryBorders
 {
-	border: 1px solid #e7e7e7; 
-	margin-bottom: 15px; 
+	border: 1px solid #e7e7e7;
+	margin-bottom: 15px;
 	padding: 0px 5px 0px 5px;
 }
 
@@ -300,7 +305,7 @@ a:active
 {
 	font-size: .54em;
 	margin-top: 0px;
-	padding-top: 0px;	
+	padding-top: 0px;
 }
 
 #BlogHomeRightNav
@@ -327,24 +332,24 @@ a:active
 	padding: 5px 0px 5px 10px;
 	color: #FFFFFF;
 	font-size: 1em;
-	
+
 	background-color: #6c7b9d;
-	
+
 	/* Safari 4+, Chrome 1-9 */
    background-image: -webkit-gradient(left, 0% 0%, 0% 100%, from(#6c7b9d), to(#a0acc8));
 
    /* Safari 5.1+, Mobile Safari, Chrome 10+ */
-   background-image: -webkit-linear-gradient(left, #6c7b9d, #a0acc8); 
+   background-image: -webkit-linear-gradient(left, #6c7b9d, #a0acc8);
 
    /* Firefox 3.6+ */
    background-image: -moz-linear-gradient(left, #6c7b9d, #a0acc8);
- 
+
    /* IE 10+ */
    background-image: -ms-linear-gradient(left, #6c7b9d, #a0acc8);
 
    /* Opera 11.10+ */
    background-image: -o-linear-gradient(left, #6c7b9d, #a0acc8);
-	
+
 }
 #BlogRightSideLatest ul
 {
@@ -375,7 +380,7 @@ a:active
 #BlogRightSideAdContainer div
 {
 	position: relative;
-	
+
 	width: 210px;
 }
 
@@ -392,18 +397,18 @@ a:active
 	width: 640px;
 	float: left;
 	border-right: 1px solid #a0acc8;
-	padding-right: 15px;	
+	padding-right: 15px;
 }
 #BlogRightAllCategories
 {
-	float: right; 
-	clear: both; 
+	float: right;
+	clear: both;
 }
 
 .CommentFormLabel
 {
 	padding-top: 10px;
-	clear: both;	
+	clear: both;
 }
 
 
@@ -414,29 +419,29 @@ a:active
 
 #BlogCommentUserHeaderImage
 {
-	float: left; 
-	margin: 0px 0px 5px 5px; 
-	/*border: 1px solid gray;*/ 
+	float: left;
+	margin: 0px 0px 5px 5px;
+	/*border: 1px solid gray;*/
 	width: 50px;
 }
 
 #BlogCommentUserHeaderUser
 {
-	float: right; 
-	padding-left: 10px; 
+	float: right;
+	padding-left: 10px;
 	width: 570px;
 }
 
 #BlogCommentUserHeaderName
 {
-	font-size: 1em; 
-	font-weight: bold; 
+	font-size: 1em;
+	font-weight: bold;
 	margin-right: 20px;
 }
 
 #BlogCommentUserHeaderTime
 {
-	font-size: .8em; 
+	font-size: .8em;
 	color: gray;
 }
 
@@ -449,10 +454,10 @@ a:active
 {
 	padding: 15px 0px 10px 0px;
 }
-	
+
 .BlogCommentUserCommentReplyText
 {
-	color: #FFA500; 
+	color: #FFA500;
 	font-size: .8em;
 }
 .BlogCommentUserCommentReplyText:hover
@@ -464,7 +469,7 @@ a:active
 .BlogCommentUserCommentCancelText
 {
 	display: none;
-	color: #FFA500; 
+	color: #FFA500;
 	font-size: .8em;
 }
 .BlogCommentUserCommentCancelText:hover
@@ -475,14 +480,14 @@ a:active
 
 .BlogCommentUserSeparator
 {
-	border-top: 1px solid silver; 
-	margin-top: 20px; 
+	border-top: 1px solid silver;
+	margin-top: 20px;
 	padding-top: 20px;
-}	
+}
 .NewEntryCommentObjectError
 {
 	color: maroon;
-	font-size: .6em;	
+	font-size: .6em;
 }
 
 code {
@@ -553,29 +558,29 @@ pre {
 	width: 600px;
 }
 
-.ImageRegularFrame {  
-    margin: 1em 0;  
+.ImageRegularFrame {
+    margin: 1em 0;
     height: 525px;
     width: 600px;
     background-color: lightgray;
     position: relative;
-}  
+}
 
-.ImageRegularFrame img {  
-    max-height: 500px;  
-    max-width: 500px;  
-    position: absolute;  
-    top: 0;  
-    bottom: 0;  
-    left: 0;  
-    right: 0;  
-    margin: auto;  
-    background: #3A6F9A;  
+.ImageRegularFrame img {
+    max-height: 500px;
+    max-width: 500px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    background: #3A6F9A;
 }
 #ImageTitle
 {
-	font-weight: bold; 
-	text-align: center; 
+	font-weight: bold;
+	text-align: center;
 	width: 600px;
 }
 

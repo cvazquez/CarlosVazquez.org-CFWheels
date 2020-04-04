@@ -51,8 +51,8 @@
 						#linkTo(text="#qSeriesPosts.title#", href="/blog/#qSeriesPosts.titleURL#")#
 					</cfif>
 				</li>
-			</cfloop>	
-		</ul>		
+			</cfloop>
+		</ul>
 	</cfif>
 
 
@@ -71,12 +71,15 @@
 		<div class="clear"></div>
 
 		<div id="CommentBlockContainer">
-			#includePartial("commentform")#
+			<cfif cgi.server_name EQ "www.carlosvazquez.org">
+				<p>Comments are currently turned off</p>
+			<cfelse>
+				#includePartial("commentform")#
+			</cfif>
 		</div>
 	</cfif>
 
 </div>
-
 
 <div id="BlogHomeRightNav">
 	#includePartial("topcategories")#
