@@ -577,9 +577,6 @@
 			method="get">
 	</cfhttp>
 
-	<!--- <cfdump var="#cfhttp#"> --->
-
-
 	<cfset local.startPos = reFindNoCase('<div class="column column-alpha " id="user_main_content">', cfhttp.FileContent, 1, "TRUE")>
 	<cfset local.endPos = reFindNoCase('<div class="column column-beta " id="about_user_column">', cfhttp.FileContent, 1, "TRUE")>
 	<cfset local.docLength = len(cfhttp.FileContent)>
@@ -626,14 +623,6 @@
 
 
 	<cfdump var="#local#">
-
-	<!--- <cfoutput>#cfhttp.FileContent#</cfoutput> --->
-
-	<!--- <div class="column column-alpha " id="user_main_content">
-	<div class="column column-beta " id="about_user_column"> --->
-
-
-
 
 <cfabort>
 
@@ -685,11 +674,6 @@
 		<cflocation url="#qPicture.correctCase#.jpg#(params.size NEQ '' ? '?size=' & params.size : '')#" addtoken="false" statuscode="301">
 	</cfif>
 
-
-	<!--- <cfdump var="#qPicture#">
-	<cfabort> --->
-
-	<!--- <cfcontent > --->
 	<cflocation url="#qPicture.picURL#" addtoken="false" statuscode="301">
 
 </cffunction>
@@ -726,7 +710,7 @@
 				<cfset newComment.entryDiscussionId = params.NewEntryCommentObject.entryDiscussionId>
 			</cfif>
 
-			<cfset newComment.validCaptcha = validateCaptcha()>
+			<!--- <cfset newComment.validCaptcha = validateCaptcha()> --->
 
 			<cfset newComment.save(	parameterize	= true)>
 		</cftransaction>
@@ -766,11 +750,10 @@
 		</cfif>
 
 	<cfcatch type="any">
-		<cfset EmailError(cfcatch)>
+		<cfdump var="#cfcatch#" abort="true">
+		<!--- <cfset EmailError(cfcatch)> --->
 	</cfcatch>
 	</cftry>
-
-	<!--- </cfif> --->
 </cffunction>
 
 

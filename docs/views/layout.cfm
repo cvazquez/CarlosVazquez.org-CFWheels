@@ -40,17 +40,7 @@
 				<div id="HeaderLogoContainer">&nbsp;</div>
 				<div id="HeaderAdContainer"><!--- <img src="/images/samplead.gif" border="1"> --->
 					<cfif get("environment") is "production">
-						<script type="text/javascript"><!--
-						google_ad_client = "ca-pub-4772985754168821";
-						/* HeaderAdContainer */
-						google_ad_slot = "1771136707";
-						google_ad_width = 728;
-						google_ad_height = 90;
-						//-->
-						</script>
-						<script type="text/javascript"
-						src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
-						</script>
+						<script data-ad-client="ca-pub-5924586772427688" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 					</cfif>
 				</div>
 			</div>
@@ -73,9 +63,6 @@
 				<div id="HeaderMainLinksText">
 					<a href="/blog/category/Travel">Travel</a>
 					<a href="/blog/category/Fitness-And-Health">Fitness/Health</a>
-					<!--- <a href="/blog/category/Recipies">Recipies</a>
-					<a href="/blog/category/development">Development</a>
-					<a href="/blog/category/reviews">Reviews</a> --->
 					<a href="/blog/category/Random-Ramblings">Random&nbsp;Stuff</a>
 					<a href="/blog/category/Website-Development">Website Development</a>
 					<a href="/blog/category/Portfolio">Portfolio</a>
@@ -84,17 +71,7 @@
 
 			<div id="HeaderAdLinkUnit">
 				<cfif get("environment") is "production">
-					<!--- Ads by Google --->
-					<script type="text/javascript">
-						<!--
-						google_ad_client = "ca-pub-4772985754168821";
-						/* HeaderAdLinkUnit */
-						google_ad_slot = "6340937107";
-						google_ad_width = 468;
-						google_ad_height = 15;
-						//-->
-					</script>
-					<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script>
+					<script data-ad-client="ca-pub-5924586772427688" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 				</cfif>
 			</div>
 

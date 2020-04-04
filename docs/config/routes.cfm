@@ -16,7 +16,7 @@
 		.get(name="Categories", pattern="/blog/categories", controller="blog", action="categories")
 		.get(name="Blog", controller="blog", action="index")
 		.get(name="notfound", pattern="", controller="home", action="notfound")
-		.get(name="SaveComment", pattern="/blog/save-comment", controller="blog", action="SaveComment")
+		.post(name="SaveComment", pattern="/blog/save-comment", controller="blog", action="SaveComment")
 		.get(name="RefreshComments", pattern="/blog/refresh-comments", controller="blog", action="RefreshComments")
 		.get(name="RefreshCommentForm", pattern="/blog/refresh-comment-form", controller="blog", action="RefreshCommentForm")
 		.get(name="Validate", pattern="/blog/validate/[key]", controller="blog", action="validate")

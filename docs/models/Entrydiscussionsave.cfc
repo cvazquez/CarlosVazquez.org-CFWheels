@@ -20,7 +20,7 @@
 		<cfset validatesLengthOf(properties="content", minimum=5, maximum=65536)>
 		<cfset validate(method="validateEmailFormat")>
 
-		<cfset validate( method="validateCaptcha" )>
+		<!--- <cfset validate( method="validateCaptcha" )> --->
 
 		<cfset automaticValidations(false)>
 
@@ -36,9 +36,9 @@
 
 
 	<cffunction name="validateCaptcha" access="private">
-		<cfif NOT this.validCaptcha>
+		<!--- <cfif NOT this.validCaptcha>
 	        <cfset addError(property="recaptcha_response_field", message="Captcha is incorrect.")>
-	    </cfif>
+	    </cfif> --->
 	</cffunction>
 
 

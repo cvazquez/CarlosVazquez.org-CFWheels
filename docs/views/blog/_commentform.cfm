@@ -41,7 +41,7 @@
 					required	= "required",
 					cols		="40")#<br /><br />
 
-		#showCaptcha(captchaError=captchaError)#<br />
+		<!--- #showCaptcha(captchaError=captchaError)#<br /> --->
 
 		<!--- <script type="text/javascript"
 			src="http://www.google.com/recaptcha/api/challenge?k=#Application.sReCaptcha.publicKey#">
